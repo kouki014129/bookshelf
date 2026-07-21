@@ -47,7 +47,11 @@ class BookController extends Controller
 
     public function show(Book $book)
     {
-        $reviews = $book->reviews()->withCount('likes')->get();
+        $book->load([
+            'genres',
+            'reviews.user',
+            'reviews.likedByUsers',
+        ]);
 
         /** @var \App\Models\User|null $user */
         $user = auth()->user();
@@ -55,7 +59,7 @@ class BookController extends Controller
             ? $user->favorites()->where('book_id', $book->id)->exists()
             : false;
 
-        return view('books.show', compact('book', 'reviews', 'favorited'));
+        return view('books.show', compact('book','favorited'));
     }
 
     public function edit(Book $book)
