@@ -12,9 +12,7 @@ Route::resource('books', BookController::class);
 Route::resource('genres', GenreController::class);
 
 Route::middleware('auth')->group(function () {
-    Route::get('/favorites', function () {
-        return view('favorites.index');
-    })->name('favorites.index');
+    Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
 
     Route::post('/books/{book}/favorites', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
 

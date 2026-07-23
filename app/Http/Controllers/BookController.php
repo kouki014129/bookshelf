@@ -56,7 +56,7 @@ class BookController extends Controller
         /** @var \App\Models\User|null $user */
         $user = auth()->user();
         $favorited = $user
-            ? $user->favorites()->where('book_id', $book->id)->exists()
+            ? $user->favoriteBooks()->where('book_id', $book->id)->exists()
             : false;
 
         return view('books.show', compact('book','favorited'));

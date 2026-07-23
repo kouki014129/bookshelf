@@ -14,8 +14,8 @@ class StoreReviewRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'rating'  => ['required', 'integer', 'between:1,5'],
-            'comment' => ['nullable', 'string', 'max:500'],
+            'rating'  => ['required', 'integer', 'min:1', 'max:5'],
+            'comment' => ['nullable', 'string', 'max:1000'],
         ];
     }
 
@@ -24,8 +24,9 @@ class StoreReviewRequest extends FormRequest
         return [
             'rating.required' => '評価は必須です。',
             'rating.integer'  => '評価は整数で入力してください。',
-            'rating.between'  => '評価は1〜5の範囲で入力してください。',
-            'comment.max'     => 'コメントは500文字以内で入力してください。',
+            'rating.min'      => '評価は1以上で入力してください。',
+            'rating.max'      => '評価は5以下で入力してください。',
+            'comment.max'     => 'コメントは1000文字以内で入力してください。',
         ];
     }
 }

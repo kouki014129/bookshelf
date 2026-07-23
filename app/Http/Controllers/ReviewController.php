@@ -25,8 +25,9 @@ class ReviewController extends Controller
                 ->with('error', '1つの書籍に投稿できるレビューは1件までです。');
         }
 
-        $book->reviews()->create([
+        Review::create([
             'user_id' => auth()->id(),
+            'book_id' => $book->id,
             'rating'  => $request->rating,
             'comment' => $request->comment,
         ]);
