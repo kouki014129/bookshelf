@@ -6,11 +6,12 @@ use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\GenreController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ReviewLikeController;
+use App\Http\Controllers\RankingController;
 
 Route::get('/', [BookController::class, 'index'])->name('books.index');
 Route::resource('books', BookController::class);
 Route::resource('genres', GenreController::class);
-
+Route::get('/ranking', [RankingController::class, 'index'])->name('ranking.index');
 Route::middleware('auth')->group(function () {
     Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
 
@@ -23,7 +24,3 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/reviews/{review}/like', [ReviewLikeController::class, 'toggle'])->name('reviews.like');
 });
-
-Route::get('/ranking', function () {
-    return view('ranking.index');
-})->name('ranking.index');

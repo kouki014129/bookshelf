@@ -2,13 +2,17 @@
 
 namespace App\Exceptions;
 
+use App\Models\Book;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
 {
     /**
-     * The list of the inputs that are never flashed to the session on validation exceptions.
+     * 入力値として表示しない項目
      *
      * @var array<int, string>
      */
@@ -19,12 +23,31 @@ class Handler extends ExceptionHandler
     ];
 
     /**
-     * Register the exception handling callbacks for the application.
+     * 例外処理を登録する
      */
     public function register(): void
     {
-        $this->reportable(function (Throwable $e) {
+        $this->reportable(function (Throwable $exception) {
             //
+        });
+
+        $this->renderable(function (
+            NotFoundHttpException $exception,
+            Request $request
+        ) {
+            $previousException = $exception->getPrevious();
+
+            if (
+                $request->is('api/v1/books/*')
+                && $previousException instanceof ModelNotFoundException
+                && $previousException->getModel() === Book::class
+            ) {
+                return response()->json([
+                    'message' => '指定された書籍が見つかりません。',
+                ], 404);
+            }
+
+            return null;
         });
     }
 }
