@@ -2,41 +2,103 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\IndexBookRequest;
 use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
 use App\Models\Book;
 use App\Models\Genre;
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class BookController extends Controller
 {
+    /**
+     * コントローラーのミドルウェアを設定する。
+     */
     public function __construct()
     {
         $this->middleware('auth')->except(['index', 'show']);
     }
 
-    public function index()
+    /**
+     * 書籍一覧を検索・絞り込み条件付きで表示する。
+     */
+    public function index(IndexBookRequest $request): View
     {
-        $books = Book::with(['genres', 'reviews'])->paginate(10);
-        return view('books.index', compact('books'));
+        $keyword = $request->input('keyword');
+        $genre = $request->input('genre');
+        $sort = $request->input('sort', 'latest');
+
+        $query = Book::query()
+            ->with(['genres', 'reviews'])
+            ->withAvg('reviews', 'rating');
+
+        if ($keyword) {
+            $query->where(function ($query) use ($keyword) {
+                $query->where('title', 'like', "%{$keyword}%")
+                    ->orWhere('author', 'like', "%{$keyword}%");
+            });
+        }
+
+        if ($genre) {
+            $query->whereHas('genres', function ($query) use ($genre) {
+                $query->where('genres.id', $genre);
+            });
+        }
+
+        switch ($sort) {
+            case 'oldest':
+                $query->orderBy('created_at');
+                break;
+
+            case 'title':
+                $query->orderBy('title');
+                break;
+
+            case 'rating':
+                $query->orderByRaw('reviews_avg_rating IS NULL')
+                    ->orderByDesc('reviews_avg_rating');
+                break;
+
+            case 'latest':
+            default:
+                $query->orderByDesc('created_at');
+                break;
+        }
+
+        $books = $query
+            ->paginate(10)
+            ->appends($request->query());
+
+        $genres = Genre::all();
+
+        return view('books.index', compact('books', 'genres'));
     }
 
-    public function create()
+    /**
+     * 書籍登録画面を表示する。
+     */
+    public function create(): View
     {
         $genres = Genre::all();
 
         return view('books.create', compact('genres'));
     }
 
-    public function store(StoreBookRequest $request)
+    /**
+     * 書籍を登録する。
+     */
+    public function store(StoreBookRequest $request): RedirectResponse
     {
         $book = Book::create([
-            'user_id'        => auth()->id(),
-            'title'          => $request->title,
-            'author'         => $request->author,
-            'isbn'           => $request->isbn,
+            'user_id' => auth()->id(),
+            'title' => $request->title,
+            'author' => $request->author,
+            'isbn' => $request->isbn,
             'published_date' => $request->published_date,
-            'description'    => $request->description,
-            'image_url'      => $request->image_url,
+            'description' => $request->description,
+            'image_url' => $request->image_url,
         ]);
 
         $book->genres()->sync($request->genres);
@@ -45,7 +107,10 @@ class BookController extends Controller
             ->with('success', '書籍を登録しました');
     }
 
-    public function show(Book $book)
+    /**
+     * 書籍詳細画面を表示する。
+     */
+    public function show(Book $book): View
     {
         $book->load([
             'genres',
@@ -53,16 +118,22 @@ class BookController extends Controller
             'reviews.likedByUsers',
         ]);
 
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = auth()->user();
+
         $favorited = $user
-            ? $user->favoriteBooks()->where('book_id', $book->id)->exists()
+            ? $user->favoriteBooks()
+                ->where('book_id', $book->id)
+                ->exists()
             : false;
 
-        return view('books.show', compact('book','favorited'));
+        return view('books.show', compact('book', 'favorited'));
     }
 
-    public function edit(Book $book)
+    /**
+     * 書籍編集画面を表示する。
+     */
+    public function edit(Book $book): View
     {
         $this->authorize('update', $book);
 
@@ -71,17 +142,22 @@ class BookController extends Controller
         return view('books.edit', compact('book', 'genres'));
     }
 
-    public function update(UpdateBookRequest $request, Book $book)
-    {
+    /**
+     * 書籍情報を更新する。
+     */
+    public function update(
+        UpdateBookRequest $request,
+        Book $book
+    ): RedirectResponse {
         $this->authorize('update', $book);
 
         $book->update([
-            'title'          => $request->title,
-            'author'         => $request->author,
-            'isbn'           => $request->isbn,
+            'title' => $request->title,
+            'author' => $request->author,
+            'isbn' => $request->isbn,
             'published_date' => $request->published_date,
-            'description'    => $request->description,
-            'image_url'      => $request->image_url,
+            'description' => $request->description,
+            'image_url' => $request->image_url,
         ]);
 
         $book->genres()->sync($request->genres);
@@ -90,7 +166,10 @@ class BookController extends Controller
             ->with('success', '書籍情報を更新しました');
     }
 
-    public function destroy(Book $book)
+    /**
+     * 書籍を削除する。
+     */
+    public function destroy(Book $book): RedirectResponse
     {
         $this->authorize('delete', $book);
 

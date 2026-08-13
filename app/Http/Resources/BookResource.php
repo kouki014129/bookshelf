@@ -12,13 +12,13 @@ class BookResource extends JsonResource
         $reviewsCount = (int) ($this->reviews_count ?? 0);
 
         return [
-            'id'             => $this->id,
-            'title'          => $this->title,
-            'author'         => $this->author,
-            'isbn'           => (string) $this->isbn,
+            'id' => $this->id,
+            'title' => $this->title,
+            'author' => $this->author,
+            'isbn' => (string) $this->isbn,
             'published_date' => $this->published_date,
-            'description'    => $this->description,
-            'image_url'      => $this->image_url,
+            'description' => $this->description,
+            'image_url' => $this->image_url,
 
             'genres' => GenreResource::collection(
                 $this->whenLoaded('genres')
@@ -36,12 +36,12 @@ class BookResource extends JsonResource
                         'id' => $review->id,
 
                         'user' => [
-                            'id'   => $review->user->id,
+                            'id' => $review->user->id,
                             'name' => $review->user->name,
                         ],
 
-                        'rating'    => $review->rating,
-                        'comment'   => $review->comment,
+                        'rating' => $review->rating,
+                        'comment' => $review->comment,
                         'created_at' => $review->created_at?->toIso8601String(),
                     ];
                 });

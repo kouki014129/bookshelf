@@ -51,15 +51,13 @@ class BookController extends Controller
     {
         $book = DB::transaction(function () use ($request) {
             $book = Book::create([
-                'title'          => $request->input('title'),
-                'author'         => $request->input('author'),
-                'isbn'           => $request->input('isbn'),
+                'user_id' => $request->user()->id,
+                'title' => $request->input('title'),
+                'author' => $request->input('author'),
+                'isbn' => $request->input('isbn'),
                 'published_date' => $request->input('published_date'),
-                'description'    => $request->input('description'),
-                'image_url'      => $request->input('image_url'),
-
-                // 基礎段階は認証なしのため、仮ユーザーを設定
-                'user_id'        => 1,
+                'description' => $request->input('description'),
+                'image_url' => $request->input('image_url'),
             ]);
 
             $book->genres()->sync(
@@ -69,18 +67,7 @@ class BookController extends Controller
             return $book;
         });
 
-        $book->load([
-            'genres',
-            'reviews' => function ($query) {
-                $query
-                    ->with('user')
-                    ->orderByDesc('created_at')
-                    ->orderByDesc('id');
-            },
-        ]);
-
-        $book->loadCount('reviews');
-        $book->loadAvg('reviews', 'rating');
+        $this->loadBookRelations($book);
 
         return (new BookResource($book))
             ->additional([
@@ -92,24 +79,15 @@ class BookController extends Controller
 
     public function show(Book $book)
     {
-        $book->load([
-            'genres',
-            'reviews' => function ($query) {
-                $query
-                    ->with('user')
-                    ->orderByDesc('created_at')
-                    ->orderByDesc('id');
-            },
-        ]);
-
-        $book->loadCount('reviews');
-        $book->loadAvg('reviews', 'rating');
+        $this->loadBookRelations($book);
 
         return new BookResource($book);
     }
 
     public function update(UpdateBookRequest $request, Book $book)
     {
+        $this->authorize('update', $book);
+
         $book = DB::transaction(function () use ($request, $book) {
             $book->update(
                 $request->safe()->except('genres')
@@ -122,6 +100,25 @@ class BookController extends Controller
             return $book;
         });
 
+        $this->loadBookRelations($book);
+
+        return (new BookResource($book))
+            ->additional([
+                'message' => '書籍情報を更新しました。',
+            ]);
+    }
+
+    public function destroy(Book $book)
+    {
+        $this->authorize('delete', $book);
+
+        $book->delete();
+
+        return response()->json(null, 204);
+    }
+
+    private function loadBookRelations(Book $book): void
+    {
         $book->load([
             'genres',
             'reviews' => function ($query) {
@@ -134,17 +131,5 @@ class BookController extends Controller
 
         $book->loadCount('reviews');
         $book->loadAvg('reviews', 'rating');
-
-        return (new BookResource($book))
-            ->additional([
-                'message' => '書籍情報を更新しました。',
-            ]);
-    }
-
-    public function destroy(Book $book)
-    {
-        $book->delete();
-
-        return response()->json(null, 204);
     }
 }

@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Genre;
+use Illuminate\Database\Seeder;
 
 class GenreSeeder extends Seeder
 {
@@ -24,7 +23,7 @@ class GenreSeeder extends Seeder
         ];
 
         foreach ($genres as $name) {
-           Genre::firstOrCreate(['name' => $name]);
+            Genre::firstOrCreate(['name' => $name]);
         }
     }
 }
