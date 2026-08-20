@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ReadingPlanStatus;
 use App\Http\Requests\StoreReadingPlanRequest;
 use App\Http\Requests\UpdateReadingPlanRequest;
 use App\Models\Book;
@@ -12,13 +13,19 @@ use Illuminate\View\View;
 
 class ReadingPlanController extends Controller
 {
+    /**
+     * ログインユーザーの読書計画一覧を表示する。
+     *
+     * @param  Request  $request  ステータス絞り込み条件
+     * @return View 読書計画一覧画面
+     */
     public function index(Request $request): View
     {
         $status = $request->query('status');
 
         $allowedStatuses = [
-            'planning',
-            'completed',
+            ReadingPlanStatus::Planning->value,
+            ReadingPlanStatus::Completed->value,
         ];
 
         $readingPlans = ReadingPlan::query()
@@ -39,6 +46,11 @@ class ReadingPlanController extends Controller
         ));
     }
 
+    /**
+     * 読書計画の新規登録画面を表示する。
+     *
+     * @return View 読書計画登録画面
+     */
     public function create(): View
     {
         $books = Book::query()
@@ -48,6 +60,12 @@ class ReadingPlanController extends Controller
         return view('reading-plans.create', compact('books'));
     }
 
+    /**
+     * ログインユーザーの読書計画を登録する。
+     *
+     * @param  StoreReadingPlanRequest  $request  読書計画登録フォームの入力値
+     * @return RedirectResponse 登録後のリダイレクトレスポンス
+     */
     public function store(
         StoreReadingPlanRequest $request
     ): RedirectResponse {
@@ -55,7 +73,7 @@ class ReadingPlanController extends Controller
             'user_id' => auth()->id(),
             'book_id' => $request->validated('book_id'),
             'deadline' => $request->validated('deadline'),
-            'status' => 'planning',
+            'status' => ReadingPlanStatus::Planning,
         ]);
 
         return redirect()
@@ -63,6 +81,12 @@ class ReadingPlanController extends Controller
             ->with('success', '読書計画を登録しました。');
     }
 
+    /**
+     * 読書計画の編集画面を表示する。
+     *
+     * @param  ReadingPlan  $readingPlan  編集対象の読書計画
+     * @return View 読書計画編集画面
+     */
     public function edit(ReadingPlan $readingPlan): View
     {
         $this->authorize('update', $readingPlan);
@@ -75,6 +99,13 @@ class ReadingPlanController extends Controller
         );
     }
 
+    /**
+     * 読書計画の期限を更新する。
+     *
+     * @param  UpdateReadingPlanRequest  $request  読書計画更新フォームの入力値
+     * @param  ReadingPlan  $readingPlan  更新対象の読書計画
+     * @return RedirectResponse 更新後のリダイレクトレスポンス
+     */
     public function update(
         UpdateReadingPlanRequest $request,
         ReadingPlan $readingPlan
@@ -90,6 +121,12 @@ class ReadingPlanController extends Controller
             ->with('success', '読書計画を更新しました。');
     }
 
+    /**
+     * 読書計画を削除する。
+     *
+     * @param  ReadingPlan  $readingPlan  削除対象の読書計画
+     * @return RedirectResponse 削除後のリダイレクトレスポンス
+     */
     public function destroy(
         ReadingPlan $readingPlan
     ): RedirectResponse {
@@ -102,13 +139,19 @@ class ReadingPlanController extends Controller
             ->with('success', '読書計画を削除しました。');
     }
 
+    /**
+     * 読書計画を読了状態に更新する。
+     *
+     * @param  ReadingPlan  $readingPlan  読了対象の読書計画
+     * @return RedirectResponse 読了後のリダイレクトレスポンス
+     */
     public function complete(
         ReadingPlan $readingPlan
     ): RedirectResponse {
         $this->authorize('update', $readingPlan);
 
         $readingPlan->update([
-            'status' => 'completed',
+            'status' => ReadingPlanStatus::Completed,
         ]);
 
         return redirect()

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ReadingPlanStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,6 +20,7 @@ class ReadingPlan extends Model
 
     protected $casts = [
         'deadline' => 'date',
+        'status' => ReadingPlanStatus::class,
     ];
 
     public function user(): BelongsTo

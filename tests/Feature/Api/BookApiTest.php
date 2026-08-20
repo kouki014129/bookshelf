@@ -51,22 +51,20 @@ class BookApiTest extends TestCase
                     'updated_at',
                 ],
             ],
-            'links' => [
-                'first',
-                'last',
-                'prev',
-                'next',
-            ],
             'meta' => [
                 'current_page',
-                'from',
                 'last_page',
-                'path',
+                'prev_page',
+                'next_page',
                 'per_page',
+                'from',
                 'to',
                 'total',
             ],
         ]);
+
+        $response->assertJsonMissingPath('links');
+        $response->assertJsonMissingPath('meta.path');
 
         $response->assertJsonPath('data.0.id', $book->id);
         $response->assertJsonPath('data.0.title', 'Laravel入門');
@@ -75,6 +73,9 @@ class BookApiTest extends TestCase
         $response->assertJsonPath('data.0.genres.0.id', $genre->id);
         $response->assertJsonPath('data.0.average_rating', null);
         $response->assertJsonPath('data.0.reviews_count', 0);
+        $response->assertJsonPath('meta.current_page', 1);
+        $response->assertJsonPath('meta.prev_page', null);
+        $response->assertJsonPath('meta.next_page', null);
     }
 
     public function test_一覧は1ページ10件で取得できる(): void
@@ -85,9 +86,12 @@ class BookApiTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonCount(10, 'data');
+        $response->assertJsonPath('meta.current_page', 1);
         $response->assertJsonPath('meta.per_page', 10);
         $response->assertJsonPath('meta.total', 11);
         $response->assertJsonPath('meta.last_page', 2);
+        $response->assertJsonPath('meta.prev_page', null);
+        $response->assertJsonPath('meta.next_page', 2);
     }
 
     public function test_per_pageで一覧件数を指定できる(): void
@@ -98,8 +102,12 @@ class BookApiTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonCount(3, 'data');
+        $response->assertJsonPath('meta.current_page', 1);
         $response->assertJsonPath('meta.per_page', 3);
         $response->assertJsonPath('meta.total', 5);
+        $response->assertJsonPath('meta.last_page', 2);
+        $response->assertJsonPath('meta.prev_page', null);
+        $response->assertJsonPath('meta.next_page', 2);
     }
 
     public function test_per_pageが50を超える場合は422になる(): void
@@ -202,6 +210,8 @@ class BookApiTest extends TestCase
         $response->assertStatus(200);
         $response->assertJsonCount(0, 'data');
         $response->assertJsonPath('meta.total', 0);
+        $response->assertJsonPath('meta.prev_page', null);
+        $response->assertJsonPath('meta.next_page', null);
     }
 
     public function test_ジャンルidが文字列の場合は422になる(): void

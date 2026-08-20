@@ -38,7 +38,7 @@
                                         -- 書籍を選択 --
                                     </option>
 
-                                    @foreach($books as $book)
+                                    @foreach ($books as $book)
                                         <option
                                             value="{{ $book->id }}"
                                             @selected(old('book_id') == $book->id)

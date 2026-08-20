@@ -8,7 +8,7 @@
     <div class="py-12">
         <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
 
-            @if(session('success'))
+            @if (session('success'))
                 <div class="mb-6 rounded-md bg-green-50 px-4 py-3 text-sm text-green-700">
                     {{ session('success') }}
                 </div>
@@ -61,7 +61,7 @@
                 </a>
             </div>
 
-            @if($readingPlans->isEmpty())
+            @if ($readingPlans->isEmpty())
                 <div class="bg-white shadow-sm sm:rounded-lg">
                     <div class="p-6 text-sm text-gray-500">
                         該当する読書計画はありません。
@@ -69,7 +69,7 @@
                 </div>
             @else
                 <div class="space-y-4">
-                    @foreach($readingPlans as $readingPlan)
+                    @foreach ($readingPlans as $readingPlan)
                         <div class="bg-white shadow-sm sm:rounded-lg">
                             <div class="p-6">
                                 <div class="flex items-center justify-between gap-6">
@@ -100,7 +100,7 @@
                                                 </p>
 
                                                 <div class="mt-1">
-                                                    @if($readingPlan->status === 'planning')
+                                                    @if ($readingPlan->status === 'planning')
                                                         <span class="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
                                                             計画中
                                                         </span>
@@ -119,7 +119,7 @@
                                     </div>
 
                                     <div class="flex shrink-0 items-center gap-3">
-                                        @if($readingPlan->status !== 'completed')
+                                        @if ($readingPlan->status !== 'completed')
                                             <form
                                                 action="{{ route('reading-plans.complete', $readingPlan) }}"
                                                 method="POST"

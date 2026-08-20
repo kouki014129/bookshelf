@@ -163,12 +163,16 @@ class BookSearchTest extends TestCase
 
     public function test_タイトル順に並べ替えできる(): void
     {
-        $bookB = Book::factory()->create([
-            'title' => 'Bの本',
+        $bookC = Book::factory()->create([
+            'title' => 'C言語入門',
         ]);
 
         $bookA = Book::factory()->create([
-            'title' => 'Aの本',
+            'title' => 'AWS入門',
+        ]);
+
+        $bookB = Book::factory()->create([
+            'title' => 'Book管理術',
         ]);
 
         $response = $this->get('/books?sort=title');
@@ -177,10 +181,11 @@ class BookSearchTest extends TestCase
         $response->assertSeeInOrder([
             $bookA->title,
             $bookB->title,
+            $bookC->title,
         ]);
     }
 
-    public function test_評価順に並べ替えできレビューなしは最後になる(): void
+    public function test_評価が高い順に並べ替えできレビューなしは最後になる(): void
     {
         $highRatedBook = Book::factory()->create([
             'title' => '高評価の本',
@@ -212,5 +217,63 @@ class BookSearchTest extends TestCase
             $lowRatedBook->title,
             $noReviewBook->title,
         ]);
+    }
+
+    public function test_検索条件と並び順を組み合わせて使える(): void
+    {
+        $techGenre = Genre::factory()->create([
+            'name' => '技術書',
+        ]);
+
+        $businessGenre = Genre::factory()->create([
+            'name' => 'ビジネス',
+        ]);
+
+        $highRatedTargetBook = Book::factory()->create([
+            'title' => 'Laravel高評価',
+            'author' => '山田太郎',
+        ]);
+
+        $lowRatedTargetBook = Book::factory()->create([
+            'title' => 'Laravel低評価',
+            'author' => '山田太郎',
+        ]);
+
+        $otherGenreBook = Book::factory()->create([
+            'title' => 'Laravel別ジャンル',
+            'author' => '山田太郎',
+        ]);
+
+        $highRatedTargetBook->genres()->attach($techGenre->id);
+        $lowRatedTargetBook->genres()->attach($techGenre->id);
+        $otherGenreBook->genres()->attach($businessGenre->id);
+
+        Review::factory()->create([
+            'book_id' => $highRatedTargetBook->id,
+            'rating' => 5,
+        ]);
+
+        Review::factory()->create([
+            'book_id' => $lowRatedTargetBook->id,
+            'rating' => 2,
+        ]);
+
+        Review::factory()->create([
+            'book_id' => $otherGenreBook->id,
+            'rating' => 1,
+        ]);
+
+        $response = $this->get(
+            '/books?keyword=Laravel&genre='
+            .$techGenre->id
+            .'&sort=rating'
+        );
+
+        $response->assertStatus(200);
+        $response->assertSeeInOrder([
+            $highRatedTargetBook->title,
+            $lowRatedTargetBook->title,
+        ]);
+        $response->assertDontSee($otherGenreBook->title);
     }
 }

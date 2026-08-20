@@ -24,32 +24,28 @@ class ReadingPlanSeeder extends Seeder
         ReadingPlan::create([
             'user_id' => $mainUser->id,
             'book_id' => $books->get(0)->id,
-            'planned_start' => Carbon::today()->addDay(),
-            'planned_end' => Carbon::today()->addDay(),
+            'deadline' => Carbon::today()->addDay(),
             'status' => 'planning',
         ]);
 
         ReadingPlan::create([
             'user_id' => $mainUser->id,
             'book_id' => $books->get(1)->id,
-            'planned_start' => Carbon::today()->addDays(3),
-            'planned_end' => Carbon::today()->addDays(3),
+            'deadline' => Carbon::today()->addDays(3),
             'status' => 'planning',
         ]);
 
         ReadingPlan::create([
             'user_id' => $mainUser->id,
             'book_id' => $books->get(2)->id,
-            'planned_start' => Carbon::today()->subDay(),
-            'planned_end' => Carbon::today()->subDay(),
+            'deadline' => Carbon::today()->subDay(),
             'status' => 'reading',
         ]);
 
         ReadingPlan::create([
             'user_id' => $mainUser->id,
             'book_id' => $books->get(3)->id,
-            'planned_start' => Carbon::today()->subDays(7),
-            'planned_end' => Carbon::today()->subDays(7),
+            'deadline' => Carbon::today()->subDays(7),
             'status' => 'completed',
         ]);
 
@@ -57,8 +53,7 @@ class ReadingPlanSeeder extends Seeder
             ReadingPlan::create([
                 'user_id' => $users->get(1)->id,
                 'book_id' => $books->get(4)->id,
-                'planned_start' => Carbon::today()->addDay(),
-                'planned_end' => Carbon::today()->addDay(),
+                'deadline' => Carbon::today()->addDay(),
                 'status' => 'planning',
             ]);
         }

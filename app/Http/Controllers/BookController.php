@@ -9,6 +9,7 @@ use App\Models\Book;
 use App\Models\Genre;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class BookController extends Controller
@@ -57,8 +58,10 @@ class BookController extends Controller
                 break;
 
             case 'rating':
-                $query->orderByRaw('reviews_avg_rating IS NULL')
-                    ->orderByDesc('reviews_avg_rating');
+                $query
+                    ->orderByRaw('reviews_avg_rating IS NULL')
+                    ->orderByDesc('reviews_avg_rating')
+                    ->orderByDesc('created_at');
                 break;
 
             case 'latest':
@@ -91,17 +94,21 @@ class BookController extends Controller
      */
     public function store(StoreBookRequest $request): RedirectResponse
     {
-        $book = Book::create([
-            'user_id' => auth()->id(),
-            'title' => $request->title,
-            'author' => $request->author,
-            'isbn' => $request->isbn,
-            'published_date' => $request->published_date,
-            'description' => $request->description,
-            'image_url' => $request->image_url,
-        ]);
+        $book = DB::transaction(function () use ($request): Book {
+            $book = Book::create([
+                'user_id' => auth()->id(),
+                'title' => $request->title,
+                'author' => $request->author,
+                'isbn' => $request->isbn,
+                'published_date' => $request->published_date,
+                'description' => $request->description,
+                'image_url' => $request->image_url,
+            ]);
 
-        $book->genres()->sync($request->genres);
+            $book->genres()->sync($request->genres);
+
+            return $book;
+        });
 
         return redirect()->route('books.show', $book)
             ->with('success', '書籍を登録しました');
@@ -151,16 +158,18 @@ class BookController extends Controller
     ): RedirectResponse {
         $this->authorize('update', $book);
 
-        $book->update([
-            'title' => $request->title,
-            'author' => $request->author,
-            'isbn' => $request->isbn,
-            'published_date' => $request->published_date,
-            'description' => $request->description,
-            'image_url' => $request->image_url,
-        ]);
+        DB::transaction(function () use ($request, $book): void {
+            $book->update([
+                'title' => $request->title,
+                'author' => $request->author,
+                'isbn' => $request->isbn,
+                'published_date' => $request->published_date,
+                'description' => $request->description,
+                'image_url' => $request->image_url,
+            ]);
 
-        $book->genres()->sync($request->genres);
+            $book->genres()->sync($request->genres);
+        });
 
         return redirect()->route('books.show', $book)
             ->with('success', '書籍情報を更新しました');

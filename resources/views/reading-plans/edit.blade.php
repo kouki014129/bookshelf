@@ -32,7 +32,7 @@
                                     現在の状態:
                                 </span>
 
-                                @if($readingPlan->status === 'planning')
+                                @if ($readingPlan->status === 'planning')
                                     <span class="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700">
                                         計画中
                                     </span>
@@ -61,10 +61,7 @@
                                 type="date"
                                 name="deadline"
                                 id="deadline"
-                                value="{{ old(
-                                    'deadline',
-                                    optional($readingPlan->deadline)->format('Y-m-d')
-                                ) }}"
+                                value="{{ old('deadline', optional($readingPlan->deadline)->format('Y-m-d')) }}"
                                 class="block w-full rounded-md border-gray-300 shadow-sm"
                             >
 

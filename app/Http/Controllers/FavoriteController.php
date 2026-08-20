@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Book;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class FavoriteController extends Controller
 {
@@ -23,7 +24,7 @@ class FavoriteController extends Controller
         return redirect()->back();
     }
 
-    public function index()
+    public function index(): View
     {
         /** @var User $user */
         $user = auth()->user();

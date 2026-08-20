@@ -15,24 +15,61 @@
                     <x-nav-link :href="route('books.index')" :active="request()->routeIs('books.index')">
                         {{ __('書籍一覧') }}
                     </x-nav-link>
+
                     <x-nav-link :href="route('ranking.index')" :active="request()->routeIs('ranking.index')">
                         {{ __('ランキング') }}
                     </x-nav-link>
+
                     <x-nav-link :href="route('books.create')" :active="request()->routeIs('books.create')">
                         {{ __('書籍登録') }}
                     </x-nav-link>
+
                     <x-nav-link :href="route('favorites.index')" :active="request()->routeIs('favorites.index')">
                         {{ __('お気に入り') }}
                     </x-nav-link>
+
                     <x-nav-link :href="route('genres.index')" :active="request()->routeIs('genres.*')">
                         {{ __('ジャンル管理') }}
                     </x-nav-link>
+
+                    @auth
+                        <x-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
+                            {{ __('マイレポート') }}
+                        </x-nav-link>
+
+                        <x-nav-link :href="route('reading-plans.index')" :active="request()->routeIs('reading-plans.*')">
+                            {{ __('読書計画') }}
+                        </x-nav-link>
+                    @endauth
                 </div>
             </div>
 
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 @auth
+                    @if(Route::has('notifications.index'))
+                        <a
+                            href="{{ route('notifications.index') }}"
+                            class="mr-6 text-gray-500 hover:text-gray-700"
+                            aria-label="通知一覧"
+                        >
+                            <svg
+                                class="h-6 w-6"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a3 3 0 11-6 0m6 0H9"
+                                />
+                            </svg>
+                        </a>
+                    @endif
+
                     <x-dropdown align="right" width="48">
                         <x-slot name="trigger">
                             <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
@@ -50,26 +87,49 @@
                             <!-- Authentication -->
                             <form method="POST" action="{{ route('logout') }}" novalidate>
                                 @csrf
-                                <x-dropdown-link :href="route('logout')"
-                                        onclick="event.preventDefault();
-                                                    this.closest('form').submit();">
+                                <x-dropdown-link
+                                    :href="route('logout')"
+                                    onclick="event.preventDefault();
+                                                this.closest('form').submit();"
+                                >
                                     {{ __('ログアウト') }}
                                 </x-dropdown-link>
                             </form>
                         </x-slot>
                     </x-dropdown>
                 @else
-                    <a href="{{ route('login') }}" class="text-sm text-gray-700 underline hover:text-gray-900">ログイン</a>
-                    <a href="{{ route('register') }}" class="ml-4 text-sm text-gray-700 underline hover:text-gray-900">新規登録</a>
+                    <a href="{{ route('login') }}" class="text-sm text-gray-700 underline hover:text-gray-900">
+                        ログイン
+                    </a>
+                    <a href="{{ route('register') }}" class="ml-4 text-sm text-gray-700 underline hover:text-gray-900">
+                        新規登録
+                    </a>
                 @endauth
             </div>
 
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
+                <button
+                    @click="open = ! open"
+                    class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out"
+                >
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        <path
+                            :class="{'hidden': open, 'inline-flex': ! open }"
+                            class="inline-flex"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16"
+                        />
+                        <path
+                            :class="{'hidden': ! open, 'inline-flex': open }"
+                            class="hidden"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"
+                        />
                     </svg>
                 </button>
             </div>
@@ -82,35 +142,61 @@
             <x-responsive-nav-link :href="route('books.index')" :active="request()->routeIs('books.index')">
                 {{ __('書籍一覧') }}
             </x-responsive-nav-link>
+
             <x-responsive-nav-link :href="route('ranking.index')" :active="request()->routeIs('ranking.index')">
                 {{ __('ランキング') }}
             </x-responsive-nav-link>
+
             <x-responsive-nav-link :href="route('books.create')" :active="request()->routeIs('books.create')">
                 {{ __('書籍登録') }}
             </x-responsive-nav-link>
+
             <x-responsive-nav-link :href="route('favorites.index')" :active="request()->routeIs('favorites.index')">
                 {{ __('お気に入り') }}
             </x-responsive-nav-link>
+
             <x-responsive-nav-link :href="route('genres.index')" :active="request()->routeIs('genres.*')">
                 {{ __('ジャンル管理') }}
             </x-responsive-nav-link>
+
+            @auth
+                <x-responsive-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
+                    {{ __('マイレポート') }}
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('reading-plans.index')" :active="request()->routeIs('reading-plans.*')">
+                    {{ __('読書計画') }}
+                </x-responsive-nav-link>
+
+                @if(Route::has('notifications.index'))
+                    <x-responsive-nav-link :href="route('notifications.index')" :active="request()->routeIs('notifications.*')">
+                        {{ __('通知') }}
+                    </x-responsive-nav-link>
+                @endif
+            @endauth
         </div>
 
         <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t border-gray-200">
             @auth
                 <div class="px-4">
-                    <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
-                    <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
+                    <div class="font-medium text-base text-gray-800">
+                        {{ Auth::user()->name }}
+                    </div>
+                    <div class="font-medium text-sm text-gray-500">
+                        {{ Auth::user()->email }}
+                    </div>
                 </div>
 
                 <div class="mt-3 space-y-1">
                     <!-- Authentication -->
                     <form method="POST" action="{{ route('logout') }}" novalidate>
                         @csrf
-                        <x-responsive-nav-link :href="route('logout')"
-                                onclick="event.preventDefault();
-                                            this.closest('form').submit();">
+                        <x-responsive-nav-link
+                            :href="route('logout')"
+                            onclick="event.preventDefault();
+                                        this.closest('form').submit();"
+                        >
                             {{ __('ログアウト') }}
                         </x-responsive-nav-link>
                     </form>
@@ -120,6 +206,7 @@
                     <x-responsive-nav-link :href="route('login')">
                         {{ __('ログイン') }}
                     </x-responsive-nav-link>
+
                     <x-responsive-nav-link :href="route('register')">
                         {{ __('新規登録') }}
                     </x-responsive-nav-link>

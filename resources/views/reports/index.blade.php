@@ -388,11 +388,9 @@
                     </h3>
 
                     <div class="rating-list">
-                        @foreach($ratingDistribution as $star => $count)
+                        @foreach ($ratingDistribution as $star => $count)
                             @php
-                                $percentage = $totalReviews > 0
-                                    ? ($count / $totalReviews) * 100
-                                    : 0;
+                                $percentage = $totalReviews > 0 ? ($count / $totalReviews) * 100 : 0;
                             @endphp
 
                             <div class="rating-row">
@@ -401,10 +399,7 @@
                                 </div>
 
                                 <div class="rating-track">
-                                    <div
-                                        class="rating-fill"
-                                        style="width: {{ $percentage }}%;"
-                                    ></div>
+                                    <div class="rating-fill" style="width: {{ $percentage }}%;"></div>
                                 </div>
 
                                 <div class="rating-count">
@@ -421,15 +416,15 @@
                         高評価書籍 TOP5
                     </h3>
 
-                    @if($topRatedBooks->isEmpty())
+                    @if ($topRatedBooks->isEmpty())
                         <p class="text-sm text-gray-500 mt-4">
                             レビューした書籍がありません。
                         </p>
                     @else
                         <div class="top-books">
-                            @foreach($topRatedBooks as $review)
+                            @foreach ($topRatedBooks as $review)
                                 @php
-                                    $rankClass = match($loop->iteration) {
+                                    $rankClass = match ($loop->iteration) {
                                         1 => 'rank-1',
                                         2 => 'rank-2',
                                         3 => 'rank-3',
@@ -455,8 +450,8 @@
                                     </div>
 
                                     <div class="book-stars">
-                                        @for($i = 1; $i <= 5; $i++)
-                                            @if($i <= $review->rating)
+                                        @for ($i = 1; $i <= 5; $i++)
+                                            @if ($i <= $review->rating)
                                                 ★
                                             @else
                                                 ☆
@@ -481,16 +476,16 @@
                     どのジャンルを高く評価する傾向があるかを表示
                 </p>
 
-                @if($genreStatistics->isEmpty())
+                @if ($genreStatistics->isEmpty())
                     <p class="text-sm text-gray-500">
                         ジャンル別の評価データがありません。
                     </p>
                 @else
                     <div class="genre-grid">
 
-                        @foreach($genreStatistics as $genre)
+                        @foreach ($genreStatistics as $genre)
                             @php
-                                $rankClass = match($loop->iteration) {
+                                $rankClass = match ($loop->iteration) {
                                     1 => 'rank-1',
                                     2 => 'rank-2',
                                     3 => 'rank-3',

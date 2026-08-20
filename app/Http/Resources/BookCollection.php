@@ -19,20 +19,17 @@ class BookCollection extends ResourceCollection
         $paginated,
         $default
     ): array {
-        return [
-            'links' => [
-                'first' => $paginated['first_page_url'],
-                'last' => $paginated['last_page_url'],
-                'prev' => $paginated['prev_page_url'],
-                'next' => $paginated['next_page_url'],
-            ],
+        $currentPage = (int) $paginated['current_page'];
+        $lastPage = (int) $paginated['last_page'];
 
+        return [
             'meta' => [
-                'current_page' => $paginated['current_page'],
+                'current_page' => $currentPage,
+                'last_page' => $lastPage,
+                'prev_page' => $currentPage > 1 ? $currentPage - 1 : null,
+                'next_page' => $currentPage < $lastPage ? $currentPage + 1 : null,
+                'per_page' => (int) $paginated['per_page'],
                 'from' => $paginated['from'],
-                'last_page' => $paginated['last_page'],
-                'path' => $paginated['path'],
-                'per_page' => $paginated['per_page'],
                 'to' => $paginated['to'],
                 'total' => $paginated['total'],
             ],

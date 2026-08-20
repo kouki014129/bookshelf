@@ -9,14 +9,20 @@ use Illuminate\View\View;
 
 class ReportController extends Controller
 {
+    /**
+     * ログインユーザーのレビュー履歴を集計し、読書レポート画面を表示する。
+     *
+     * @return View 読書レポート画面
+     */
     public function index(): View
     {
+        $userId = Auth::id();
+
         $reviews = Review::query()
-            ->where('user_id', Auth::id())
+            ->where('user_id', $userId)
             ->with('book.genres')
             ->get();
 
-        // 基本統計
         $totalReviews = $reviews->count();
 
         $completedBooks = $reviews
@@ -28,33 +34,30 @@ class ReportController extends Controller
             ? round($reviews->avg('rating'), 1)
             : 0;
 
-        // 評価分布
-        $ratingDistribution = [];
+        $ratingDistribution = collect(range(1, 5))
+            ->mapWithKeys(function (int $rating) use ($reviews): array {
+                return [
+                    $rating => $reviews
+                        ->where('rating', $rating)
+                        ->count(),
+                ];
+            })
+            ->all();
 
-        for ($i = 1; $i <= 5; $i++) {
-            $ratingDistribution[$i] = $reviews
-                ->where('rating', $i)
-                ->count();
-        }
-
-        // 高評価書籍
-        // 要件UIでは上位3冊を表示
         $topRatedBooks = $reviews
             ->sortByDesc('rating')
             ->take(3)
             ->values();
 
-        // ジャンル別評価傾向 TOP5
-        $genreStatistics = Genre::with('books.reviews')
+        $genreStatistics = Genre::query()
+            ->with('books.reviews')
             ->get()
-            ->map(function ($genre) {
-                $genreReviews = collect();
-
-                foreach ($genre->books as $book) {
-                    $genreReviews = $genreReviews->merge(
-                        $book->reviews->where('user_id', Auth::id())
-                    );
-                }
+            ->map(function (Genre $genre) use ($userId): object {
+                $genreReviews = $genre->books
+                    ->flatMap(function ($book) use ($userId) {
+                        return $book->reviews
+                            ->where('user_id', $userId);
+                    });
 
                 return (object) [
                     'name' => $genre->name,
@@ -65,7 +68,7 @@ class ReportController extends Controller
                 ];
             })
             ->filter(
-                fn ($genre) => $genre->reviews_count > 0
+                fn (object $genre): bool => $genre->reviews_count > 0
             )
             ->sortByDesc('average_rating')
             ->take(5)

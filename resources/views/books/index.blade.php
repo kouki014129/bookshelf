@@ -113,17 +113,17 @@
                                     </option>
 
                                     <option
-                                        value="rating"
-                                        {{ request('sort') === 'rating' ? 'selected' : '' }}
-                                    >
-                                        評価順
-                                    </option>
-
-                                    <option
                                         value="title"
                                         {{ request('sort') === 'title' ? 'selected' : '' }}
                                     >
                                         タイトル順
+                                    </option>
+
+                                    <option
+                                        value="rating"
+                                        {{ request('sort') === 'rating' ? 'selected' : '' }}
+                                    >
+                                        評価が高い順
                                     </option>
                                 </select>
 
