@@ -44,6 +44,13 @@ BookShelfは、書籍の登録・閲覧・レビュー投稿ができる書籍�
 git clone git@github.com:kouki014129/bookshelf.git
 cd bookshelf
 cp .env.example .env
+docker run --rm \
+    -u "$(id -u):$(id -g)" \
+    -v "$(pwd):/var/www/html" \
+    -w /var/www/html \
+    -e COMPOSER_CACHE_DIR=/tmp/composer_cache \
+    laravelsail/php82-composer:latest \
+    composer install
 ./vendor/bin/sail up -d --build
 ```
 
@@ -63,8 +70,8 @@ DB_CONNECTION=mysql
 DB_HOST=mysql
 DB_PORT=3306
 DB_DATABASE=laravel
-DB_USERNAME=root
-DB_PASSWORD=
+DB_USERNAME=sail
+DB_PASSWORD=password
 ```
 
 2. アプリケーションキーを生成します。
@@ -79,7 +86,13 @@ DB_PASSWORD=
 ./vendor/bin/sail artisan migrate:fresh --seed
 ```
 
-4. フロントエンドを起動します。
+4. フロントエンドの依存パッケージをインストールします。
+
+```bash
+./vendor/bin/sail npm install
+```
+
+5. フロントエンドを起動します。
 
 ```bash
 ./vendor/bin/sail npm run dev
