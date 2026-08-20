@@ -7,6 +7,12 @@
 
     <div class="py-12 bg-gray-100 min-h-screen">
         <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
+            @if (session('success'))
+                <div class="mb-6 rounded-md bg-green-50 px-4 py-3 text-sm text-green-700">
+                    {{ session('success') }}
+                </div>
+            @endif
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 @if ($notifications->isEmpty())
                     <div class="min-h-[200px] flex flex-col items-center justify-center text-gray-400">
@@ -30,22 +36,49 @@
                 @else
                     <div class="divide-y divide-gray-200">
                         @foreach ($notifications as $notification)
-                            <a
-                                href="{{ $notification->data['url'] ?? route('reading-plans.index') }}"
-                                class="block px-6 py-5 hover:bg-gray-50"
-                            >
-                                <p class="font-semibold text-gray-800">
-                                    {{ $notification->data['message'] }}
-                                </p>
+                            <div class="flex items-start justify-between gap-4 px-6 py-5 {{ $notification->read_at ? 'bg-white' : 'bg-blue-50' }}">
+                                <a
+                                    href="{{ $notification->data['url'] ?? route('reading-plans.index') }}"
+                                    class="min-w-0 flex-1 hover:opacity-80"
+                                >
+                                    <div class="flex items-center gap-2">
+                                        @unless ($notification->read_at)
+                                            <span class="inline-flex rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+                                                未読
+                                            </span>
+                                        @endunless
 
-                                <p class="mt-1 text-sm text-gray-500">
-                                    期限日：{{ $notification->data['deadline'] }}
-                                </p>
+                                        <p class="font-semibold text-gray-800">
+                                            {{ $notification->data['message'] }}
+                                        </p>
+                                    </div>
 
-                                <p class="mt-1 text-xs text-gray-400">
-                                    {{ $notification->created_at->format('Y/m/d H:i') }}
-                                </p>
-                            </a>
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        期限日：{{ $notification->data['deadline'] }}
+                                    </p>
+
+                                    <p class="mt-1 text-xs text-gray-400">
+                                        {{ $notification->created_at->format('Y/m/d H:i') }}
+                                    </p>
+                                </a>
+
+                                @unless ($notification->read_at)
+                                    <form
+                                        action="{{ route('notifications.read', $notification) }}"
+                                        method="POST"
+                                    >
+                                        @csrf
+                                        @method('PATCH')
+
+                                        <button
+                                            type="submit"
+                                            class="rounded-md border border-blue-300 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50"
+                                        >
+                                            既読にする
+                                        </button>
+                                    </form>
+                                @endunless
+                            </div>
                         @endforeach
                     </div>
                 @endif
