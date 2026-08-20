@@ -15,6 +15,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [BookController::class, 'index'])
     ->name('books.index');
 
+Route::get(
+    '/books/isbn/{isbn}',
+    [GoogleBooksController::class, 'search']
+)->name('books.isbn.search');
+
 Route::resource('books', BookController::class);
 
 Route::resource('genres', GenreController::class);
@@ -23,11 +28,6 @@ Route::get(
     '/ranking',
     [RankingController::class, 'index']
 )->name('ranking.index');
-
-Route::get(
-    '/google-books',
-    [GoogleBooksController::class, 'search']
-)->name('google-books.search');
 
 Route::middleware('auth')->group(function () {
     Route::get(
@@ -89,7 +89,7 @@ Route::middleware('auth')->group(function () {
         [NotificationController::class, 'index']
     )->name('notifications.index');
 
-    Route::patch(
+    Route::post(
         '/notifications/{notification}/read',
         [NotificationController::class, 'markAsRead']
     )->name('notifications.read');

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\ReadingPlanStatus;
 use App\Models\Book;
 use App\Models\ReadingPlan;
 use App\Models\User;
@@ -25,28 +26,28 @@ class ReadingPlanSeeder extends Seeder
             'user_id' => $mainUser->id,
             'book_id' => $books->get(0)->id,
             'deadline' => Carbon::today()->addDay(),
-            'status' => 'planning',
+            'status' => ReadingPlanStatus::Planning,
         ]);
 
         ReadingPlan::create([
             'user_id' => $mainUser->id,
             'book_id' => $books->get(1)->id,
             'deadline' => Carbon::today()->addDays(3),
-            'status' => 'planning',
+            'status' => ReadingPlanStatus::Planning,
         ]);
 
         ReadingPlan::create([
             'user_id' => $mainUser->id,
             'book_id' => $books->get(2)->id,
             'deadline' => Carbon::today()->subDay(),
-            'status' => 'reading',
+            'status' => ReadingPlanStatus::Expired,
         ]);
 
         ReadingPlan::create([
             'user_id' => $mainUser->id,
             'book_id' => $books->get(3)->id,
             'deadline' => Carbon::today()->subDays(7),
-            'status' => 'completed',
+            'status' => ReadingPlanStatus::Completed,
         ]);
 
         if ($users->count() >= 2 && $books->count() >= 5) {
@@ -54,7 +55,7 @@ class ReadingPlanSeeder extends Seeder
                 'user_id' => $users->get(1)->id,
                 'book_id' => $books->get(4)->id,
                 'deadline' => Carbon::today()->addDay(),
-                'status' => 'planning',
+                'status' => ReadingPlanStatus::Planning,
             ]);
         }
     }

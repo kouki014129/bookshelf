@@ -378,6 +378,49 @@ class BookApiTest extends TestCase
         ]);
     }
 
+    public function test_api書籍登録時に送信されたuser_idではなく認証ユーザーidで登録される(): void
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $genre = Genre::factory()->create();
+
+        $payload = [
+            'user_id' => $otherUser->id,
+            'title' => 'Laravel安全設計',
+            'author' => '山田太郎',
+            'isbn' => '9781234567892',
+            'published_date' => '2025-01-01',
+            'description' => 'API登録者IDの偽装を防ぐ確認です。',
+            'image_url' => 'https://example.com/book.jpg',
+            'genres' => [
+                $genre->id,
+            ],
+        ];
+
+        $response = $this
+            ->actingAs($user, 'sanctum')
+            ->postJson('/api/v1/books', $payload);
+
+        $response->assertCreated();
+
+        $book = Book::where('isbn', '9781234567892')
+            ->firstOrFail();
+
+        $this->assertSame($user->id, $book->user_id);
+        $this->assertNotSame($otherUser->id, $book->user_id);
+
+        $this->assertDatabaseHas('books', [
+            'id' => $book->id,
+            'user_id' => $user->id,
+            'isbn' => '9781234567892',
+        ]);
+
+        $this->assertDatabaseMissing('books', [
+            'id' => $book->id,
+            'user_id' => $otherUser->id,
+        ]);
+    }
+
     public function test_未認証では書籍を登録できない(): void
     {
         $genre = Genre::factory()->create();
@@ -716,12 +759,16 @@ class BookApiTest extends TestCase
             'message',
             '入力内容に誤りがあります。'
         );
+
         $response->assertJsonValidationErrors([
             'title',
             'author',
+            'genres',
+        ]);
+
+        $response->assertJsonMissingValidationErrors([
             'isbn',
             'published_date',
-            'genres',
         ]);
 
         $this->assertDatabaseHas('books', [

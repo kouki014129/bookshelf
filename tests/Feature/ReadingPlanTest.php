@@ -205,6 +205,80 @@ class ReadingPlanTest extends TestCase
         );
     }
 
+    public function test_completed_plan_cannot_be_updated(): void
+    {
+        $user = User::factory()->create();
+        $book = Book::factory()->create();
+
+        $readingPlan = ReadingPlan::create([
+            'user_id' => $user->id,
+            'book_id' => $book->id,
+            'deadline' => now()->addDay()->format('Y-m-d'),
+            'status' => 'completed',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->put(
+                route(
+                    'reading-plans.update',
+                    $readingPlan
+                ),
+                [
+                    'deadline' => now()
+                        ->addDays(5)
+                        ->format('Y-m-d'),
+                ]
+            );
+
+        $response->assertRedirect(
+            route('reading-plans.index')
+        );
+
+        $this->assertDatabaseHas(
+            'reading_plans',
+            [
+                'id' => $readingPlan->id,
+                'status' => 'completed',
+                'deadline' => $readingPlan->deadline->format('Y-m-d'),
+            ]
+        );
+    }
+
+    public function test_expired_plan_cannot_be_completed(): void
+    {
+        $user = User::factory()->create();
+        $book = Book::factory()->create();
+
+        $readingPlan = ReadingPlan::create([
+            'user_id' => $user->id,
+            'book_id' => $book->id,
+            'deadline' => now()->subDay()->format('Y-m-d'),
+            'status' => 'expired',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->post(
+                route(
+                    'reading-plans.complete',
+                    $readingPlan
+                )
+            );
+
+        $response->assertRedirect(
+            route('reading-plans.index')
+        );
+
+        $this->assertDatabaseHas(
+            'reading_plans',
+            [
+                'id' => $readingPlan->id,
+                'status' => 'expired',
+            ]
+        );
+    }
+
     public function test_user_can_delete_own_reading_plan(): void
     {
         $user = User::factory()->create();
@@ -244,6 +318,7 @@ class ReadingPlanTest extends TestCase
 
         $planningBook = Book::factory()->create();
         $completedBook = Book::factory()->create();
+        $expiredBook = Book::factory()->create();
 
         ReadingPlan::create([
             'user_id' => $user->id,
@@ -259,23 +334,34 @@ class ReadingPlanTest extends TestCase
             'status' => 'completed',
         ]);
 
+        ReadingPlan::create([
+            'user_id' => $user->id,
+            'book_id' => $expiredBook->id,
+            'deadline' => now()->subDay()->format('Y-m-d'),
+            'status' => 'expired',
+        ]);
+
         $response = $this
             ->actingAs($user)
             ->get(
                 route(
                     'reading-plans.index',
-                    ['status' => 'completed']
+                    ['status' => 'expired']
                 )
             );
 
         $response->assertOk();
 
         $response->assertSee(
-            $completedBook->title
+            $expiredBook->title
         );
 
         $response->assertDontSee(
             $planningBook->title
+        );
+
+        $response->assertDontSee(
+            $completedBook->title
         );
     }
 
@@ -290,6 +376,7 @@ class ReadingPlanTest extends TestCase
         $response->assertOk();
         $response->assertSee('計画中');
         $response->assertSee('読了');
+        $response->assertSee('期限切れ');
         $response->assertDontSee('進行中');
     }
 }

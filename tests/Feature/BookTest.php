@@ -2,8 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ReadingPlanStatus;
 use App\Models\Book;
 use App\Models\Genre;
+use App\Models\ReadingPlan;
+use App\Models\Review;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -31,9 +34,57 @@ class BookTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertViewIs('books.show');
-        $response->assertViewHas('book', function (Book $viewBook) use ($book) {
+        $response->assertViewHas('book', function (Book $viewBook) use ($book): bool {
             return $viewBook->id === $book->id;
         });
+    }
+
+    public function test_書籍詳細に必要な情報が表示される(): void
+    {
+        $genre = Genre::factory()->create([
+            'name' => '技術書',
+        ]);
+
+        $reviewUser = User::factory()->create([
+            'name' => 'レビュー投稿者',
+        ]);
+
+        $likeUser = User::factory()->create();
+
+        $book = Book::factory()->create([
+            'title' => 'Laravel実践入門',
+            'author' => '山田太郎',
+            'isbn' => '9781234567890',
+            'published_date' => '2026-08-05',
+            'description' => 'Laravelの実践的な解説書です。',
+            'image_url' => 'https://example.com/book.jpg',
+        ]);
+
+        $book->genres()->attach($genre->id);
+
+        $review = Review::factory()->create([
+            'user_id' => $reviewUser->id,
+            'book_id' => $book->id,
+            'rating' => 5,
+            'comment' => 'とても参考になりました。',
+        ]);
+
+        $likeUser->likedReviews()->attach($review->id);
+
+        $response = $this->get(route('books.show', $book));
+
+        $response->assertStatus(200);
+        $response->assertSee('Laravel実践入門');
+        $response->assertSee('山田太郎');
+        $response->assertSee('9781234567890');
+        $response->assertSee('2026-08-05');
+        $response->assertSee('Laravelの実践的な解説書です。');
+        $response->assertSee('https://example.com/book.jpg');
+        $response->assertSee('技術書');
+        $response->assertSee('レビュー投稿者');
+        $response->assertSee('★★★★★');
+        $response->assertSee('とても参考になりました。');
+        $response->assertSee('いいね (1)');
     }
 
     public function test_認証済みユーザーは書籍を登録できる(): void
@@ -123,9 +174,12 @@ class BookTest extends TestCase
         $response->assertSessionHasErrors([
             'title',
             'author',
+            'genres',
+        ]);
+
+        $response->assertSessionDoesntHaveErrors([
             'isbn',
             'published_date',
-            'genres',
         ]);
 
         $this->assertDatabaseCount('books', 0);
@@ -281,7 +335,7 @@ class BookTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertViewIs('books.edit');
-        $response->assertViewHas('book', function (Book $viewBook) use ($book) {
+        $response->assertViewHas('book', function (Book $viewBook) use ($book): bool {
             return $viewBook->id === $book->id;
         });
     }
@@ -400,6 +454,72 @@ class BookTest extends TestCase
 
         $response->assertRedirect(route('books.index'));
         $response->assertSessionHas('success', '書籍を削除しました');
+    }
+
+    public function test_書籍削除時に関連データも削除される(): void
+    {
+        $owner = User::factory()->create();
+        $reviewUser = User::factory()->create();
+        $favoriteUser = User::factory()->create();
+        $likeUser = User::factory()->create();
+
+        $genre = Genre::factory()->create();
+
+        $book = Book::factory()->create([
+            'user_id' => $owner->id,
+        ]);
+
+        $book->genres()->attach($genre->id);
+        $favoriteUser->favoriteBooks()->attach($book->id);
+
+        $review = Review::factory()->create([
+            'user_id' => $reviewUser->id,
+            'book_id' => $book->id,
+        ]);
+
+        $likeUser->likedReviews()->attach($review->id);
+
+        ReadingPlan::create([
+            'user_id' => $owner->id,
+            'book_id' => $book->id,
+            'deadline' => now()->addDay()->format('Y-m-d'),
+            'status' => ReadingPlanStatus::Planning,
+        ]);
+
+        $response = $this
+            ->actingAs($owner)
+            ->delete(route('books.destroy', $book));
+
+        $response->assertRedirect(route('books.index'));
+        $response->assertSessionHas('success', '書籍を削除しました');
+
+        $this->assertDatabaseMissing('books', [
+            'id' => $book->id,
+        ]);
+
+        $this->assertDatabaseMissing('book_genre', [
+            'book_id' => $book->id,
+            'genre_id' => $genre->id,
+        ]);
+
+        $this->assertDatabaseMissing('favorites', [
+            'user_id' => $favoriteUser->id,
+            'book_id' => $book->id,
+        ]);
+
+        $this->assertDatabaseMissing('reviews', [
+            'id' => $review->id,
+        ]);
+
+        $this->assertDatabaseMissing('review_likes', [
+            'user_id' => $likeUser->id,
+            'review_id' => $review->id,
+        ]);
+
+        $this->assertDatabaseMissing('reading_plans', [
+            'user_id' => $owner->id,
+            'book_id' => $book->id,
+        ]);
     }
 
     public function test_他ユーザーは書籍を削除できない(): void

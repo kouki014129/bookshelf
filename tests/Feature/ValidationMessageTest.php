@@ -35,9 +35,12 @@ class ValidationMessageTest extends TestCase
         $response->assertSessionHasErrors([
             'title' => 'タイトルは必須です。',
             'author' => '著者名は必須です。',
-            'isbn' => 'ISBNは必須です。',
-            'published_date' => '出版日は必須です。',
             'genres' => 'ジャンルを1つ以上選択してください。',
+        ]);
+
+        $response->assertSessionDoesntHaveErrors([
+            'isbn',
+            'published_date',
         ]);
     }
 
@@ -64,9 +67,12 @@ class ValidationMessageTest extends TestCase
         $response->assertSessionHasErrors([
             'title' => 'タイトルは必須です。',
             'author' => '著者名は必須です。',
-            'isbn' => 'ISBNは必須です。',
-            'published_date' => '出版日は必須です。',
             'genres' => 'ジャンルを1つ以上選択してください。',
+        ]);
+
+        $response->assertSessionDoesntHaveErrors([
+            'isbn',
+            'published_date',
         ]);
     }
 
@@ -237,9 +243,12 @@ class ValidationMessageTest extends TestCase
         $response->assertJsonPath('message', '入力内容に誤りがあります。');
         $response->assertJsonPath('errors.title.0', 'タイトルは必須です。');
         $response->assertJsonPath('errors.author.0', '著者名は必須です。');
-        $response->assertJsonPath('errors.isbn.0', 'ISBNは必須です。');
-        $response->assertJsonPath('errors.published_date.0', '出版日は必須です。');
         $response->assertJsonPath('errors.genres.0', 'ジャンルを1つ以上選択してください。');
+
+        $response->assertJsonMissingValidationErrors([
+            'isbn',
+            'published_date',
+        ]);
     }
 
     public function test_api書籍更新のバリデーションエラーjsonが日本語で返る(): void
@@ -264,9 +273,12 @@ class ValidationMessageTest extends TestCase
         $response->assertJsonPath('message', '入力内容に誤りがあります。');
         $response->assertJsonPath('errors.title.0', 'タイトルは必須です。');
         $response->assertJsonPath('errors.author.0', '著者名は必須です。');
-        $response->assertJsonPath('errors.isbn.0', 'ISBNは必須です。');
-        $response->assertJsonPath('errors.published_date.0', '出版日は必須です。');
         $response->assertJsonPath('errors.genres.0', 'ジャンルを1つ以上選択してください。');
+
+        $response->assertJsonMissingValidationErrors([
+            'isbn',
+            'published_date',
+        ]);
     }
 
     public function test_apiログイン失敗時のバリデーションエラーjsonが日本語で返る(): void

@@ -80,7 +80,7 @@ class NotificationTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->patch(route('notifications.read', $notification));
+            ->post(route('notifications.read', $notification));
 
         $response->assertRedirect(route('notifications.index'));
 
@@ -106,7 +106,7 @@ class NotificationTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->patch(route('notifications.read', $notification));
+            ->post(route('notifications.read', $notification));
 
         $response->assertForbidden();
 

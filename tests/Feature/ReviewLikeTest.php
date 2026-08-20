@@ -26,6 +26,7 @@ class ReviewLikeTest extends TestCase
         ]);
 
         $response->assertRedirect();
+        $response->assertSessionHas('success', 'レビューにいいねしました');
     }
 
     public function test_いいね済みのレビューは再度実行すると解除される(): void
@@ -45,6 +46,7 @@ class ReviewLikeTest extends TestCase
         ]);
 
         $response->assertRedirect();
+        $response->assertSessionHas('success', 'レビューのいいねを解除しました');
     }
 
     public function test_解除したレビューは再度いいねできる(): void
@@ -70,6 +72,7 @@ class ReviewLikeTest extends TestCase
         ]);
 
         $response->assertRedirect();
+        $response->assertSessionHas('success', 'レビューにいいねしました');
     }
 
     public function test_自分のレビューにもいいねできる(): void
@@ -90,6 +93,7 @@ class ReviewLikeTest extends TestCase
         ]);
 
         $response->assertRedirect();
+        $response->assertSessionHas('success', 'レビューにいいねしました');
     }
 
     public function test_未認証ユーザーはレビューにいいねできない(): void

@@ -50,10 +50,33 @@ class GenreTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertViewIs('genres.show');
-        $response->assertViewHas('genre', function (Genre $viewGenre) use ($genre) {
+        $response->assertViewHas('genre', function (Genre $viewGenre) use ($genre): bool {
             return $viewGenre->id === $genre->id;
         });
         $response->assertViewHas('books');
+    }
+
+    public function test_ジャンル詳細は紐づく書籍を1ページ10件で表示する(): void
+    {
+        $user = User::factory()->create();
+        $genre = Genre::factory()->create();
+        $books = Book::factory()->count(11)->create();
+
+        foreach ($books as $book) {
+            $book->genres()->attach($genre->id);
+        }
+
+        $response = $this
+            ->actingAs($user)
+            ->get(route('genres.show', $genre));
+
+        $response->assertStatus(200);
+
+        $response->assertViewHas('books', function ($paginatedBooks): bool {
+            return $paginatedBooks->perPage() === 10
+                && $paginatedBooks->total() === 11
+                && $paginatedBooks->count() === 10;
+        });
     }
 
     public function test_ジャンルを登録できる(): void
@@ -140,7 +163,7 @@ class GenreTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertViewIs('genres.edit');
-        $response->assertViewHas('genre', function (Genre $viewGenre) use ($genre) {
+        $response->assertViewHas('genre', function (Genre $viewGenre) use ($genre): bool {
             return $viewGenre->id === $genre->id;
         });
     }

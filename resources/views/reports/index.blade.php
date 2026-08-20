@@ -31,10 +31,6 @@
             line-height: 1.4;
         }
 
-        /* =========================
-           基本統計
-        ========================= */
-
         .summary-panel {
             padding: 24px 22px;
         }
@@ -83,10 +79,6 @@
             line-height: 1;
         }
 
-        /* =========================
-           中央2カラム
-        ========================= */
-
         .middle-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -98,10 +90,6 @@
             min-height: 304px;
             padding: 24px 22px;
         }
-
-        /* =========================
-           評価分布
-        ========================= */
 
         .rating-list {
             margin-top: 24px;
@@ -145,10 +133,6 @@
             white-space: nowrap;
         }
 
-        /* =========================
-           高評価書籍
-        ========================= */
-
         .top-books {
             margin-top: 17px;
             display: flex;
@@ -165,6 +149,13 @@
             align-items: center;
             justify-content: space-between;
             gap: 12px;
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .top-book-card:hover,
+        .genre-card:hover {
+            background: #f9fafb;
         }
 
         .top-book-left {
@@ -237,10 +228,6 @@
             white-space: nowrap;
         }
 
-        /* =========================
-           ジャンル
-        ========================= */
-
         .genre-panel {
             margin-top: 22px;
             padding: 22px;
@@ -267,6 +254,8 @@
             align-items: center;
             justify-content: space-between;
             gap: 10px;
+            color: inherit;
+            text-decoration: none;
         }
 
         .genre-left {
@@ -338,8 +327,6 @@
 
     <div class="report-page">
         <div class="report-container">
-
-            {{-- 基本統計 --}}
             <section class="report-panel summary-panel">
                 <h3 class="report-heading">
                     基本統計
@@ -378,10 +365,7 @@
                 </div>
             </section>
 
-            {{-- 評価分布 / 高評価書籍 --}}
             <div class="middle-grid">
-
-                {{-- 評価分布 --}}
                 <section class="report-panel middle-panel">
                     <h3 class="report-heading">
                         評価分布
@@ -410,7 +394,6 @@
                     </div>
                 </section>
 
-                {{-- 高評価書籍 --}}
                 <section class="report-panel middle-panel">
                     <h3 class="report-heading">
                         高評価書籍 TOP5
@@ -418,7 +401,7 @@
 
                     @if ($topRatedBooks->isEmpty())
                         <p class="text-sm text-gray-500 mt-4">
-                            レビューした書籍がありません。
+                            高評価のレビューを投稿した書籍がありません。
                         </p>
                     @else
                         <div class="top-books">
@@ -432,7 +415,10 @@
                                     };
                                 @endphp
 
-                                <div class="top-book-card">
+                                <a
+                                    href="{{ route('books.show', $review->book) }}"
+                                    class="top-book-card"
+                                >
                                     <div class="top-book-left">
                                         <div class="rank-circle {{ $rankClass }}">
                                             {{ $loop->iteration }}
@@ -458,15 +444,13 @@
                                             @endif
                                         @endfor
                                     </div>
-                                </div>
+                                </a>
                             @endforeach
                         </div>
                     @endif
                 </section>
-
             </div>
 
-            {{-- ジャンル別評価傾向 --}}
             <section class="report-panel genre-panel">
                 <h3 class="report-heading">
                     ジャンル別評価傾向 TOP5
@@ -482,7 +466,6 @@
                     </p>
                 @else
                     <div class="genre-grid">
-
                         @foreach ($genreStatistics as $genre)
                             @php
                                 $rankClass = match ($loop->iteration) {
@@ -493,9 +476,11 @@
                                 };
                             @endphp
 
-                            <div class="genre-card">
+                            <a
+                                href="{{ route('genres.show', $genre->id) }}"
+                                class="genre-card"
+                            >
                                 <div class="genre-left">
-
                                     <div class="rank-circle {{ $rankClass }}">
                                         {{ $loop->iteration }}
                                     </div>
@@ -520,13 +505,11 @@
                                         平均評価
                                     </p>
                                 </div>
-                            </div>
+                            </a>
                         @endforeach
-
                     </div>
                 @endif
             </section>
-
         </div>
     </div>
 </x-app-layout>

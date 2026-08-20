@@ -103,7 +103,7 @@ class ReportTest extends TestCase
         ]);
     }
 
-    public function test_高評価書籍が評価順で取得される(): void
+    public function test_高評価書籍は評価4以上だけが評価順で取得される(): void
     {
         $user = User::factory()->create();
 
@@ -146,8 +146,47 @@ class ReportTest extends TestCase
         $response->assertSeeInOrder([
             '高評価の本',
             '中評価の本',
-            '低評価の本',
         ]);
+
+        $response->assertDontSee('低評価の本');
+
+        $response->assertSee(
+            route('books.show', $highBook),
+            false
+        );
+
+        $response->assertViewHas('topRatedBooks', function ($topRatedBooks) use ($highBook, $middleBook): bool {
+            return $topRatedBooks->count() === 2
+                && $topRatedBooks[0]->book_id === $highBook->id
+                && $topRatedBooks[1]->book_id === $middleBook->id;
+        });
+    }
+
+    public function test_高評価書籍は最大5件まで取得される(): void
+    {
+        $user = User::factory()->create();
+
+        foreach (range(1, 6) as $number) {
+            $book = Book::factory()->create([
+                'title' => "高評価の本{$number}",
+            ]);
+
+            Review::factory()->create([
+                'user_id' => $user->id,
+                'book_id' => $book->id,
+                'rating' => 5,
+            ]);
+        }
+
+        $response = $this
+            ->actingAs($user)
+            ->get(route('reports.index'));
+
+        $response->assertStatus(200);
+
+        $response->assertViewHas('topRatedBooks', function ($topRatedBooks): bool {
+            return $topRatedBooks->count() === 5;
+        });
     }
 
     public function test_ジャンル別評価傾向が表示される(): void
@@ -175,5 +214,10 @@ class ReportTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('技術書');
         $response->assertSee('5.0');
+
+        $response->assertSee(
+            route('genres.show', $genre),
+            false
+        );
     }
 }

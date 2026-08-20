@@ -276,4 +276,36 @@ class BookSearchTest extends TestCase
         ]);
         $response->assertDontSee($otherGenreBook->title);
     }
+
+    public function test_ページネーションリンクに検索条件が引き継がれる(): void
+    {
+        $genre = Genre::factory()->create([
+            'name' => '技術書',
+        ]);
+
+        $books = Book::factory()
+            ->count(11)
+            ->create([
+                'author' => '山田太郎',
+            ]);
+
+        foreach ($books as $index => $book) {
+            $book->update([
+                'title' => sprintf('Laravel実践 %02d', $index + 1),
+            ]);
+
+            $book->genres()->attach($genre->id);
+        }
+
+        $response = $this->get(
+            '/books?keyword=Laravel&genre='.$genre->id.'&sort=title'
+        );
+
+        $response->assertStatus(200);
+
+        $response->assertSee('keyword=Laravel', false);
+        $response->assertSee('genre='.$genre->id, false);
+        $response->assertSee('sort=title', false);
+        $response->assertSee('page=2', false);
+    }
 }

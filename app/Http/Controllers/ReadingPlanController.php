@@ -26,6 +26,7 @@ class ReadingPlanController extends Controller
         $allowedStatuses = [
             ReadingPlanStatus::Planning->value,
             ReadingPlanStatus::Completed->value,
+            ReadingPlanStatus::Expired->value,
         ];
 
         $readingPlans = ReadingPlan::query()
@@ -85,11 +86,17 @@ class ReadingPlanController extends Controller
      * 読書計画の編集画面を表示する。
      *
      * @param  ReadingPlan  $readingPlan  編集対象の読書計画
-     * @return View 読書計画編集画面
+     * @return View|RedirectResponse 読書計画編集画面または一覧へのリダイレクト
      */
-    public function edit(ReadingPlan $readingPlan): View
+    public function edit(ReadingPlan $readingPlan): View|RedirectResponse
     {
         $this->authorize('update', $readingPlan);
+
+        if ($readingPlan->status !== ReadingPlanStatus::Planning) {
+            return redirect()
+                ->route('reading-plans.index')
+                ->with('error', '読了済みまたは期限切れの読書計画は編集できません。');
+        }
 
         $readingPlan->load('book');
 
@@ -111,6 +118,12 @@ class ReadingPlanController extends Controller
         ReadingPlan $readingPlan
     ): RedirectResponse {
         $this->authorize('update', $readingPlan);
+
+        if ($readingPlan->status !== ReadingPlanStatus::Planning) {
+            return redirect()
+                ->route('reading-plans.index')
+                ->with('error', '読了済みまたは期限切れの読書計画は更新できません。');
+        }
 
         $readingPlan->update([
             'deadline' => $request->validated('deadline'),
@@ -149,6 +162,12 @@ class ReadingPlanController extends Controller
         ReadingPlan $readingPlan
     ): RedirectResponse {
         $this->authorize('update', $readingPlan);
+
+        if ($readingPlan->status !== ReadingPlanStatus::Planning) {
+            return redirect()
+                ->route('reading-plans.index')
+                ->with('error', '計画中の読書計画のみ読了できます。');
+        }
 
         $readingPlan->update([
             'status' => ReadingPlanStatus::Completed,

@@ -26,6 +26,7 @@ class FavoriteTest extends TestCase
         ]);
 
         $response->assertRedirect();
+        $response->assertSessionHas('success', 'お気に入りに登録しました');
     }
 
     public function test_お気に入り登録済みの書籍は再度実行すると解除される(): void
@@ -45,6 +46,7 @@ class FavoriteTest extends TestCase
         ]);
 
         $response->assertRedirect();
+        $response->assertSessionHas('success', 'お気に入りを解除しました');
     }
 
     public function test_解除した書籍は再度お気に入り登録できる(): void
@@ -70,6 +72,7 @@ class FavoriteTest extends TestCase
         ]);
 
         $response->assertRedirect();
+        $response->assertSessionHas('success', 'お気に入りに登録しました');
     }
 
     public function test_認証済みユーザーはお気に入り一覧を表示できる(): void
@@ -105,7 +108,7 @@ class FavoriteTest extends TestCase
 
         $response->assertStatus(200);
 
-        $response->assertViewHas('books', function ($paginatedBooks) {
+        $response->assertViewHas('books', function ($paginatedBooks): bool {
             return $paginatedBooks->perPage() === 10
                 && $paginatedBooks->total() === 11
                 && $paginatedBooks->count() === 10;

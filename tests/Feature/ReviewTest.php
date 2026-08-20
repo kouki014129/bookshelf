@@ -173,7 +173,7 @@ class ReviewTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertViewIs('reviews.edit');
-        $response->assertViewHas('review', function (Review $viewReview) use ($review) {
+        $response->assertViewHas('review', function (Review $viewReview) use ($review): bool {
             return $viewReview->id === $review->id;
         });
     }
@@ -293,6 +293,36 @@ class ReviewTest extends TestCase
 
         $response->assertRedirect(route('books.show', $bookId));
         $response->assertSessionHas('success', 'レビューを削除しました');
+    }
+
+    public function test_レビュー削除時に関連いいねも削除される(): void
+    {
+        $reviewUser = User::factory()->create();
+        $likeUser = User::factory()->create();
+
+        $review = Review::factory()->create([
+            'user_id' => $reviewUser->id,
+        ]);
+
+        $likeUser->likedReviews()->attach($review->id);
+
+        $bookId = $review->book_id;
+
+        $response = $this
+            ->actingAs($reviewUser)
+            ->delete(route('reviews.destroy', $review));
+
+        $response->assertRedirect(route('books.show', $bookId));
+        $response->assertSessionHas('success', 'レビューを削除しました');
+
+        $this->assertDatabaseMissing('reviews', [
+            'id' => $review->id,
+        ]);
+
+        $this->assertDatabaseMissing('review_likes', [
+            'user_id' => $likeUser->id,
+            'review_id' => $review->id,
+        ]);
     }
 
     public function test_他ユーザーはレビューを削除できない(): void

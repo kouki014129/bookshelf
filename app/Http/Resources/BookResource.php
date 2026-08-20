@@ -2,11 +2,18 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class BookResource extends JsonResource
 {
+    /**
+     * 書籍情報をAPIレスポンス用の配列に変換する。
+     *
+     * @param  Request  $request  APIリクエスト
+     * @return array<string, mixed> 書籍情報
+     */
     public function toArray(Request $request): array
     {
         $reviewsCount = (int) ($this->reviews_count ?? 0);
@@ -31,7 +38,7 @@ class BookResource extends JsonResource
             'reviews_count' => $reviewsCount,
 
             'reviews' => $this->whenLoaded('reviews', function () {
-                return $this->reviews->map(function ($review) {
+                return $this->reviews->map(function (Review $review): array {
                     return [
                         'id' => $review->id,
 

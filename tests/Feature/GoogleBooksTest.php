@@ -2,12 +2,31 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class GoogleBooksTest extends TestCase
 {
-    public function test_isb_nから書籍情報を取得できる(): void
+    use RefreshDatabase;
+
+    public function test_書籍登録画面にisbn検索フォームが表示される(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->get(route('books.create'));
+
+        $response->assertStatus(200);
+        $response->assertSee('ISBNから書籍情報を自動入力');
+        $response->assertSee('isbn_search');
+        $response->assertSee('isbn_search_button');
+        $response->assertSee('/books/isbn/');
+    }
+
+    public function test_isbnから書籍情報を取得できる(): void
     {
         Http::fake([
             'https://www.googleapis.com/books/v1/volumes*' => Http::response([
@@ -32,7 +51,7 @@ class GoogleBooksTest extends TestCase
         ]);
 
         $response = $this->getJson(
-            '/google-books?isbn=9784873115658'
+            '/books/isbn/9784873115658'
         );
 
         $response->assertStatus(200);
@@ -45,13 +64,13 @@ class GoogleBooksTest extends TestCase
             'image_url' => 'https://example.com/book.jpg',
         ]);
 
-        Http::assertSent(function ($request) {
+        Http::assertSent(function ($request): bool {
             return $request->url()
                 === 'https://www.googleapis.com/books/v1/volumes?q=isbn%3A9784873115658';
         });
     }
 
-    public function test_存在しない_isb_nでは404になる(): void
+    public function test_存在しないisbnでは404になる(): void
     {
         Http::fake([
             'https://www.googleapis.com/books/v1/volumes*' => Http::response([
@@ -60,7 +79,7 @@ class GoogleBooksTest extends TestCase
         ]);
 
         $response = $this->getJson(
-            '/google-books?isbn=9999999999999'
+            '/books/isbn/9999999999999'
         );
 
         $response->assertStatus(404);
@@ -70,7 +89,7 @@ class GoogleBooksTest extends TestCase
         ]);
     }
 
-    public function test_google_books_ap_iがエラーの場合はそのステータスを返す(): void
+    public function test_google_books_apiがエラーの場合はそのステータスを返す(): void
     {
         Http::fake([
             'https://www.googleapis.com/books/v1/volumes*' => Http::response([
@@ -81,13 +100,26 @@ class GoogleBooksTest extends TestCase
         ]);
 
         $response = $this->getJson(
-            '/google-books?isbn=9784873115658'
+            '/books/isbn/9784873115658'
         );
 
         $response->assertStatus(429);
 
         $response->assertExactJson([
             'message' => 'Google Books APIから書籍情報を取得できませんでした。',
+        ]);
+    }
+
+    public function test_isbnが13桁でない場合は422になる(): void
+    {
+        $response = $this->getJson(
+            '/books/isbn/123'
+        );
+
+        $response->assertStatus(422);
+
+        $response->assertExactJson([
+            'message' => 'ISBNは13桁で指定してください。',
         ]);
     }
 }

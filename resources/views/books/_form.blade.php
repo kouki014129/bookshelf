@@ -44,7 +44,6 @@
 @endunless
 
 <div class="space-y-6">
-    <!-- タイトル -->
     <div>
         <label for="title" class="mb-1 block text-sm font-medium text-gray-700">
             タイトル <span class="text-red-500">*</span>
@@ -66,7 +65,6 @@
         @enderror
     </div>
 
-    <!-- 著者 -->
     <div>
         <label for="author" class="mb-1 block text-sm font-medium text-gray-700">
             著者 <span class="text-red-500">*</span>
@@ -88,7 +86,6 @@
         @enderror
     </div>
 
-    <!-- ISBN -->
     <div>
         <label for="isbn" class="mb-1 block text-sm font-medium text-gray-700">
             ISBN-13 <span class="text-red-500">*</span>
@@ -116,7 +113,6 @@
         @enderror
     </div>
 
-    <!-- 出版日 -->
     <div>
         <label for="published_date" class="mb-1 block text-sm font-medium text-gray-700">
             出版日 <span class="text-red-500">*</span>
@@ -137,7 +133,6 @@
         @enderror
     </div>
 
-    <!-- 説明 -->
     <div>
         <label for="description" class="mb-1 block text-sm font-medium text-gray-700">
             説明
@@ -158,7 +153,6 @@
         @enderror
     </div>
 
-    <!-- 画像URL -->
     <div>
         <label for="image_url" class="mb-1 block text-sm font-medium text-gray-700">
             画像URL
@@ -184,7 +178,6 @@
         @enderror
     </div>
 
-    <!-- ジャンル -->
     <div>
         <label class="mb-2 block text-sm font-medium text-gray-700">
             ジャンル <span class="text-red-500">*</span>
@@ -261,7 +254,7 @@
 
                 try {
                     const response = await fetch(
-                        `{{ route('google-books.search') }}?isbn=${encodeURIComponent(isbn)}`,
+                        `/books/isbn/${encodeURIComponent(isbn)}`,
                         {
                             headers: {
                                 'Accept': 'application/json',

@@ -43,7 +43,9 @@ class AuthenticationTest extends TestCase
 
         $this->assertGuest();
         $response->assertRedirect('/login');
-        $response->assertSessionHasErrors('email');
+        $response->assertSessionHasErrors([
+            'email' => '認証情報が記録と一致しません。',
+        ]);
     }
 
     public function test_正しい入力内容で新規登録できる(): void
@@ -76,7 +78,9 @@ class AuthenticationTest extends TestCase
             ]);
 
         $response->assertRedirect('/register');
-        $response->assertSessionHasErrors('name');
+        $response->assertSessionHasErrors([
+            'name' => '名前は必須です。',
+        ]);
 
         $this->assertDatabaseMissing('users', [
             'email' => 'yamada@example.com',
@@ -95,7 +99,9 @@ class AuthenticationTest extends TestCase
             ]);
 
         $response->assertRedirect('/register');
-        $response->assertSessionHasErrors('email');
+        $response->assertSessionHasErrors([
+            'email' => 'メールアドレスの形式が正しくありません。',
+        ]);
         $this->assertGuest();
     }
 
@@ -111,7 +117,9 @@ class AuthenticationTest extends TestCase
             ]);
 
         $response->assertRedirect('/register');
-        $response->assertSessionHasErrors('password');
+        $response->assertSessionHasErrors([
+            'password' => 'パスワード確認が一致しません。',
+        ]);
 
         $this->assertDatabaseMissing('users', [
             'email' => 'yamada@example.com',
@@ -134,9 +142,33 @@ class AuthenticationTest extends TestCase
             ]);
 
         $response->assertRedirect('/register');
-        $response->assertSessionHasErrors('email');
+        $response->assertSessionHasErrors([
+            'email' => 'このメールアドレスはすでに登録されています。',
+        ]);
 
         $this->assertDatabaseCount('users', 1);
+    }
+
+    public function test_ログイン済みユーザーはログイン画面にアクセスできない(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/login');
+
+        $response->assertRedirect('/');
+    }
+
+    public function test_ログイン済みユーザーは会員登録画面にアクセスできない(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/register');
+
+        $response->assertRedirect('/');
     }
 
     public function test_ログイン済みユーザーはログアウトできる(): void
@@ -148,6 +180,6 @@ class AuthenticationTest extends TestCase
             ->post('/logout');
 
         $this->assertGuest();
-        $response->assertRedirect('/');
+        $response->assertRedirect('/login');
     }
 }

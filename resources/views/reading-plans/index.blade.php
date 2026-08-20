@@ -14,6 +14,12 @@
                 </div>
             @endif
 
+            @if (session('error'))
+                <div class="mb-6 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             <div class="mb-5 flex items-center justify-between">
                 <form
                     method="GET"
@@ -49,6 +55,13 @@
                             @selected($status === 'completed')
                         >
                             読了
+                        </option>
+
+                        <option
+                            value="expired"
+                            @selected($status === 'expired')
+                        >
+                            期限切れ
                         </option>
                     </select>
                 </form>
@@ -100,17 +113,17 @@
                                                 </p>
 
                                                 <div class="mt-1">
-                                                    @if ($readingPlan->status === 'planning')
+                                                    @if ($readingPlan->status === \App\Enums\ReadingPlanStatus::Planning)
                                                         <span class="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
                                                             計画中
                                                         </span>
-                                                    @elseif($readingPlan->status === 'reading')
-                                                        <span class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
-                                                            進行中
-                                                        </span>
-                                                    @elseif($readingPlan->status === 'completed')
+                                                    @elseif($readingPlan->status === \App\Enums\ReadingPlanStatus::Completed)
                                                         <span class="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
                                                             読了
+                                                        </span>
+                                                    @elseif($readingPlan->status === \App\Enums\ReadingPlanStatus::Expired)
+                                                        <span class="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700">
+                                                            期限切れ
                                                         </span>
                                                     @endif
                                                 </div>
@@ -119,7 +132,7 @@
                                     </div>
 
                                     <div class="flex shrink-0 items-center gap-3">
-                                        @if ($readingPlan->status !== 'completed')
+                                        @if ($readingPlan->status === \App\Enums\ReadingPlanStatus::Planning)
                                             <form
                                                 action="{{ route('reading-plans.complete', $readingPlan) }}"
                                                 method="POST"
@@ -133,14 +146,14 @@
                                                     読了する
                                                 </button>
                                             </form>
-                                        @endif
 
-                                        <a
-                                            href="{{ route('reading-plans.edit', $readingPlan) }}"
-                                            class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                                        >
-                                            編集
-                                        </a>
+                                            <a
+                                                href="{{ route('reading-plans.edit', $readingPlan) }}"
+                                                class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                            >
+                                                編集
+                                            </a>
+                                        @endif
 
                                         <form
                                             action="{{ route('reading-plans.destroy', $readingPlan) }}"

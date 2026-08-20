@@ -68,7 +68,6 @@
                                         method="POST"
                                     >
                                         @csrf
-                                        @method('PATCH')
 
                                         <button
                                             type="submit"

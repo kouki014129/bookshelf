@@ -25,13 +25,13 @@ class StoreBookRequest extends ApiFormRequest
             ],
 
             'isbn' => [
-                'required',
+                'nullable',
                 'digits:13',
                 'unique:books,isbn',
             ],
 
             'published_date' => [
-                'required',
+                'nullable',
                 'date',
                 'date_format:Y-m-d',
             ],
@@ -70,10 +70,8 @@ class StoreBookRequest extends ApiFormRequest
             'author.required' => '著者名は必須です。',
             'author.string' => '著者名は文字列で入力してください。',
             'author.max' => '著者名は255文字以内で入力してください。',
-            'isbn.required' => 'ISBNは必須です。',
             'isbn.digits' => 'ISBNは13桁で入力してください。',
             'isbn.unique' => 'このISBNはすでに登録されています。',
-            'published_date.required' => '出版日は必須です。',
             'published_date.date' => '有効な日付を入力してください。',
             'published_date.date_format' => '出版日はYYYY-MM-DD形式で入力してください。',
             'description.string' => '説明文は文字列で入力してください。',

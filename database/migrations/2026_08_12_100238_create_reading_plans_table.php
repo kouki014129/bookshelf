@@ -26,8 +26,8 @@ return new class extends Migration
 
             $table->enum('status', [
                 'planning',
-                'reading',
                 'completed',
+                'expired',
             ])->default('planning');
 
             $table->timestamps();

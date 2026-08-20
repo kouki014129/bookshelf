@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Book;
 use App\Models\Genre;
 use App\Models\Review;
 use Illuminate\Support\Facades\Auth;
@@ -45,8 +46,9 @@ class ReportController extends Controller
             ->all();
 
         $topRatedBooks = $reviews
+            ->filter(fn (Review $review): bool => $review->rating >= 4)
             ->sortByDesc('rating')
-            ->take(3)
+            ->take(5)
             ->values();
 
         $genreStatistics = Genre::query()
@@ -54,12 +56,13 @@ class ReportController extends Controller
             ->get()
             ->map(function (Genre $genre) use ($userId): object {
                 $genreReviews = $genre->books
-                    ->flatMap(function ($book) use ($userId) {
+                    ->flatMap(function (Book $book) use ($userId) {
                         return $book->reviews
                             ->where('user_id', $userId);
                     });
 
                 return (object) [
+                    'id' => $genre->id,
                     'name' => $genre->name,
                     'reviews_count' => $genreReviews->count(),
                     'average_rating' => $genreReviews->isNotEmpty()

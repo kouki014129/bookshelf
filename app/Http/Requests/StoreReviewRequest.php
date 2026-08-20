@@ -6,19 +6,42 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreReviewRequest extends FormRequest
 {
+    /**
+     * レビュー投稿リクエストを許可する。
+     */
     public function authorize(): bool
     {
         return true;
     }
 
+    /**
+     * レビュー投稿フォームの入力値を検証する。
+     *
+     * @return array<string, mixed>
+     */
     public function rules(): array
     {
         return [
-            'rating' => ['required', 'integer', 'min:1', 'max:5'],
-            'comment' => ['nullable', 'string', 'max:1000'],
+            'rating' => [
+                'required',
+                'integer',
+                'min:1',
+                'max:5',
+            ],
+
+            'comment' => [
+                'nullable',
+                'string',
+                'max:1000',
+            ],
         ];
     }
 
+    /**
+     * レビュー投稿フォームのバリデーションエラーメッセージを返す。
+     *
+     * @return array<string, string>
+     */
     public function messages(): array
     {
         return [
@@ -26,6 +49,7 @@ class StoreReviewRequest extends FormRequest
             'rating.integer' => '評価は整数で入力してください。',
             'rating.min' => '評価は1以上で入力してください。',
             'rating.max' => '評価は5以下で入力してください。',
+            'comment.string' => 'コメントは文字列で入力してください。',
             'comment.max' => 'コメントは1000文字以内で入力してください。',
         ];
     }

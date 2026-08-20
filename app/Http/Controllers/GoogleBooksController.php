@@ -2,27 +2,33 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
 class GoogleBooksController extends Controller
 {
     /**
      * ISBNを使ってGoogle Books APIから書籍情報を取得する。
+     *
+     * @param  string  $isbn  検索対象のISBN-13
+     * @return JsonResponse 書籍情報のJSONレスポンス
      */
-    public function search(Request $request): JsonResponse
+    public function search(string $isbn): JsonResponse
     {
-        $isbn = $request->query('isbn');
+        if (! preg_match('/^\d{13}$/', $isbn)) {
+            return response()->json([
+                'message' => 'ISBNは13桁で指定してください。',
+            ], 422);
+        }
 
-        $response = Http::withHeaders([
-            'X-Goog-Api-Key' => env('GOOGLE_BOOKS_API_KEY'),
-        ])->get(
-            'https://www.googleapis.com/books/v1/volumes',
-            [
-                'q' => 'isbn:'.$isbn,
-            ]
-        );
+        $response = $this->googleBooksClient()
+            ->get(
+                'https://www.googleapis.com/books/v1/volumes',
+                [
+                    'q' => 'isbn:'.$isbn,
+                ]
+            );
 
         if ($response->failed()) {
             return response()->json([
@@ -49,5 +55,25 @@ class GoogleBooksController extends Controller
             'description' => $volumeInfo['description'] ?? null,
             'image_url' => $volumeInfo['imageLinks']['thumbnail'] ?? null,
         ]);
+    }
+
+    /**
+     * Google Books API用のHTTPクライアントを生成する。
+     *
+     * @return PendingRequest HTTPクライアント
+     */
+    private function googleBooksClient(): PendingRequest
+    {
+        $apiKey = config('services.google_books.api_key');
+
+        $client = Http::acceptJson();
+
+        if (is_string($apiKey) && $apiKey !== '') {
+            return $client->withHeaders([
+                'X-Goog-Api-Key' => $apiKey,
+            ]);
+        }
+
+        return $client;
     }
 }

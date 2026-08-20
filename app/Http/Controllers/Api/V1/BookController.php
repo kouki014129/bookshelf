@@ -9,6 +9,8 @@ use App\Http\Requests\Api\V1\UpdateBookRequest;
 use App\Http\Resources\BookCollection;
 use App\Http\Resources\BookResource;
 use App\Models\Book;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -30,7 +32,7 @@ class BookController extends Controller
         if ($request->filled('keyword')) {
             $keyword = $request->input('keyword');
 
-            $query->where(function ($query) use ($keyword) {
+            $query->where(function (Builder $query) use ($keyword): void {
                 $query
                     ->where('title', 'like', "%{$keyword}%")
                     ->orWhere('author', 'like', "%{$keyword}%");
@@ -40,7 +42,7 @@ class BookController extends Controller
         if ($request->filled('genre_id')) {
             $genreId = $request->input('genre_id');
 
-            $query->whereHas('genres', function ($query) use ($genreId) {
+            $query->whereHas('genres', function (Builder $query) use ($genreId): void {
                 $query->where('genres.id', $genreId);
             });
         }
@@ -62,7 +64,7 @@ class BookController extends Controller
      */
     public function store(StoreBookRequest $request): JsonResponse
     {
-        $book = DB::transaction(function () use ($request) {
+        $book = DB::transaction(function () use ($request): Book {
             $book = Book::create([
                 'user_id' => $request->user()->id,
                 'title' => $request->input('title'),
@@ -114,7 +116,7 @@ class BookController extends Controller
     {
         $this->authorize('update', $book);
 
-        $book = DB::transaction(function () use ($request, $book) {
+        $book = DB::transaction(function () use ($request, $book): Book {
             $book->update(
                 $request->safe()->except('genres')
             );
@@ -158,7 +160,7 @@ class BookController extends Controller
     {
         $book->load([
             'genres',
-            'reviews' => function ($query) {
+            'reviews' => function (HasMany $query): void {
                 $query
                     ->with('user')
                     ->orderByDesc('created_at')
