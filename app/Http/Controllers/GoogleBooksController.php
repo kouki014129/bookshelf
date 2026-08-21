@@ -51,7 +51,9 @@ class GoogleBooksController extends Controller
             'author' => isset($volumeInfo['authors'])
                 ? implode(', ', $volumeInfo['authors'])
                 : null,
-            'published_date' => $volumeInfo['publishedDate'] ?? null,
+            'published_date' => $this->formatPublishedDate(
+                $volumeInfo['publishedDate'] ?? null
+            ),
             'description' => $volumeInfo['description'] ?? null,
             'image_url' => $volumeInfo['imageLinks']['thumbnail'] ?? null,
         ]);
@@ -75,5 +77,32 @@ class GoogleBooksController extends Controller
         }
 
         return $client;
+    }
+
+    /**
+     * Google Books APIの出版日をHTMLの日付入力形式に変換する。
+     *
+     * @param  string|null  $publishedDate  Google Books APIの出版日
+     * @return string|null YYYY-MM-DD形式の出版日
+     */
+    private function formatPublishedDate(?string $publishedDate): ?string
+    {
+        if ($publishedDate === null) {
+            return null;
+        }
+
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $publishedDate)) {
+            return $publishedDate;
+        }
+
+        if (preg_match('/^\d{4}-\d{2}$/', $publishedDate)) {
+            return $publishedDate.'-01';
+        }
+
+        if (preg_match('/^\d{4}$/', $publishedDate)) {
+            return $publishedDate.'-01-01';
+        }
+
+        return null;
     }
 }
