@@ -44,6 +44,7 @@ BookShelfは、書籍の登録・閲覧・レビュー投稿ができる書籍�
 git clone git@github.com:kouki014129/bookshelf.git
 cd bookshelf
 cp .env.example .env
+
 docker run --rm \
     -u "$(id -u):$(id -g)" \
     -v "$(pwd):/var/www/html" \
@@ -51,6 +52,7 @@ docker run --rm \
     -e COMPOSER_CACHE_DIR=/tmp/composer_cache \
     laravelsail/php82-composer:latest \
     composer install
+
 ./vendor/bin/sail up -d --build
 ```
 
