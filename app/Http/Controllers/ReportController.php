@@ -28,17 +28,12 @@ class ReportController extends Controller
 
         $totalReviews = $reviews->count();
 
-        $completedBookIds = $reviews
-            ->pluck('book_id')
-            ->merge(
-                ReadingPlan::query()
-                    ->where('user_id', $userId)
-                    ->where('status', ReadingPlanStatus::Completed->value)
-                    ->pluck('book_id')
-            )
-            ->unique();
+        $completedReadingPlanCount = ReadingPlan::query()
+            ->where('user_id', $userId)
+            ->where('status', ReadingPlanStatus::Completed->value)
+            ->count();
 
-        $completedBooks = $completedBookIds->count();
+        $completedBooks = $totalReviews + $completedReadingPlanCount;
 
         $averageRating = $reviews->isNotEmpty()
             ? round($reviews->avg('rating'), 1)
