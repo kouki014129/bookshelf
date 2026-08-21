@@ -22,7 +22,7 @@ class BookResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'author' => $this->author,
-            'isbn' => (string) $this->isbn,
+            'isbn' => $this->isbn,
             'published_date' => $this->published_date,
             'description' => $this->description,
             'image_url' => $this->image_url,

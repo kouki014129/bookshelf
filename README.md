@@ -31,7 +31,7 @@ BookShelfは、書籍の登録・閲覧・レビュー投稿ができる書籍�
 | バックエンド | PHP 8.5 / Laravel 10.x |
 | データベース | MySQL 8.4 |
 | 認証 | Laravel Fortify / Laravel Sanctum |
-| フロントエンド | Blade / Vite / Tailwind CSS |
+| フロントエンド | Blade / Vite / Tailwind CSS / @tailwindcss/forms |
 | 開発環境 | Docker / Docker Compose / Laravel Sail |
 | DB管理 | phpMyAdmin |
 | 外部API | Google Books API |
@@ -132,6 +132,21 @@ Laravel SailのMySQLコンテナ起動時に、テスト用データベース `t
 ./vendor/bin/sail pint --test
 ```
 
+## テスト結果
+
+最終確認時点で以下を確認しています。
+
+```bash
+./vendor/bin/sail pint --test
+./vendor/bin/sail artisan test
+./vendor/bin/sail artisan test --coverage
+```
+
+```text
+Tests: 200 passed (782 assertions)
+Coverage: 94.3%
+```
+
 ## 開発環境URL
 
 | 項目 | URL |
@@ -207,7 +222,7 @@ ISBN検索機能では、LaravelのHTTPクライアントを使用してGoogle B
 https://www.googleapis.com/books/v1/volumes
 ```
 
-Google Books APIキーを使用する場合は、`.env` に以下を設定します。
+Google Books APIキーを使用する場合は、`.env` に以下を設定します。未設定でもISBN検索はAPIキーなしでリクエストします。
 
 ```text
 GOOGLE_BOOKS_API_KEY=your_api_key

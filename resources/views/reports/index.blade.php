@@ -100,12 +100,13 @@
 
         .rating-row {
             display: grid;
-            grid-template-columns: 62px minmax(0, 1fr) 38px;
-            gap: 10px;
+            grid-template-columns: 96px minmax(0, 1fr) 44px;
+            gap: 12px;
             align-items: center;
         }
 
         .rating-stars {
+            width: 96px;
             color: #f2b500;
             font-size: 16px;
             font-weight: 700;
@@ -321,6 +322,16 @@
             .summary-grid,
             .genre-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .rating-row {
+                grid-template-columns: 86px minmax(0, 1fr) 40px;
+                gap: 10px;
+            }
+
+            .rating-stars {
+                width: 86px;
+                font-size: 14px;
             }
         }
     </style>

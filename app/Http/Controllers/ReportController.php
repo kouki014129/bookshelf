@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ReadingPlanStatus;
 use App\Models\Book;
 use App\Models\Genre;
+use App\Models\ReadingPlan;
 use App\Models\Review;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -11,7 +13,7 @@ use Illuminate\View\View;
 class ReportController extends Controller
 {
     /**
-     * ログインユーザーのレビュー履歴を集計し、読書レポート画面を表示する。
+     * ログインユーザーのレビュー履歴と読書計画を集計し、読書レポート画面を表示する。
      *
      * @return View 読書レポート画面
      */
@@ -26,10 +28,17 @@ class ReportController extends Controller
 
         $totalReviews = $reviews->count();
 
-        $completedBooks = $reviews
+        $completedBookIds = $reviews
             ->pluck('book_id')
-            ->unique()
-            ->count();
+            ->merge(
+                ReadingPlan::query()
+                    ->where('user_id', $userId)
+                    ->where('status', ReadingPlanStatus::Completed->value)
+                    ->pluck('book_id')
+            )
+            ->unique();
+
+        $completedBooks = $completedBookIds->count();
 
         $averageRating = $reviews->isNotEmpty()
             ? round($reviews->avg('rating'), 1)

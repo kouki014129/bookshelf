@@ -43,7 +43,8 @@ class ReviewSeeder extends Seeder
 
             for ($i = 0; $i < $count; $i++) {
                 $user = $users[($bookIndex + $i) % $users->count()];
-                $rating = (($bookIndex + $i) % 5) + 1;
+
+                $rating = (($bookIndex * 2 + $i + 2) % 5) + 1;
 
                 Review::updateOrCreate(
                     [
